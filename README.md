@@ -294,8 +294,6 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 ### Docker Compose Example
 
 ```yaml
-version: '3.8'
-
 services:
   impersonate-service:
     image: ghcr.io/zupolgec/curl-impersonate-service:latest
