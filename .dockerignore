@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env.local
+README.md
+docker-compose.yml
+.github
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+dist/
+build/
+*.test
