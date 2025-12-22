@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Multi-architecture Docker images (AMD64 and ARM64)
+- Support for Apple Silicon Macs, AWS Graviton, and other ARM64 platforms
+
 ## [1.0.0] - 2025-12-23
 
 ### Added

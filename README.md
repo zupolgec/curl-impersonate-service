@@ -15,6 +15,7 @@ A Docker-based REST API service that wraps [curl-impersonate](https://github.com
 - **Token Authentication**: Secure API access via Bearer token or query parameter
 - **Metrics & Monitoring**: Built-in metrics endpoint for monitoring
 - **Lightweight**: Alpine-based Docker image (~200MB)
+- **Multi-Architecture**: Supports both AMD64 and ARM64 (Apple Silicon, AWS Graviton, etc.)
 - **Production Ready**: Graceful shutdown, health checks, comprehensive logging
 
 ## Quick Start
@@ -36,6 +37,7 @@ curl http://localhost:8080/health
 ### Using Docker
 
 ```bash
+# Works on both AMD64 and ARM64 (Apple Silicon, AWS Graviton, etc.)
 docker run -d \
   -p 8080:8080 \
   -e TOKEN=your-secret-token \

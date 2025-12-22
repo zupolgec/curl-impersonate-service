@@ -10,8 +10,9 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+# Build the binary for the target platform
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build \
     -ldflags="-w -s" \
     -o impersonate-service \
     .
@@ -23,9 +24,15 @@ RUN apk add --no-cache wget tar ca-certificates
 
 WORKDIR /tmp
 
-# Download pre-compiled binaries
-RUN wget -q https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz && \
-    tar -xzf curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz
+# Download pre-compiled binaries for the target architecture
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        wget -q https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.aarch64-linux-gnu.tar.gz && \
+        tar -xzf curl-impersonate-v0.6.1.aarch64-linux-gnu.tar.gz; \
+    else \
+        wget -q https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz && \
+        tar -xzf curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz; \
+    fi
 
 # Stage 3: Final runtime image
 FROM alpine:latest
