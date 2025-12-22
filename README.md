@@ -14,7 +14,7 @@ A Docker-based REST API service that wraps [curl-impersonate](https://github.com
 - **Binary Data Support**: Base64 encoding for request and response bodies
 - **Token Authentication**: Secure API access via Bearer token or query parameter
 - **Metrics & Monitoring**: Built-in metrics endpoint for monitoring
-- **Lightweight**: Alpine-based Docker image (~200MB)
+- **Lightweight**: Debian slim-based Docker image (~250MB)
 - **Multi-Architecture**: Supports both AMD64 and ARM64 (Apple Silicon, AWS Graviton, etc.)
 - **Production Ready**: Graceful shutdown, health checks, comprehensive logging
 

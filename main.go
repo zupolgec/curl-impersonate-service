@@ -94,14 +94,15 @@ func main() {
 }
 
 func verifyBinaries() error {
-	binaries := []string{
-		"/usr/local/bin/curl-impersonate-chrome",
-		"/usr/local/bin/curl-impersonate-ff",
+	// Check a few key wrapper scripts exist
+	wrapperScripts := []string{
+		"/usr/local/bin/curl_chrome116",
+		"/usr/local/bin/curl_ff109",
 	}
 
-	for _, binary := range binaries {
-		if _, err := os.Stat(binary); os.IsNotExist(err) {
-			return fmt.Errorf("binary not found: %s", binary)
+	for _, script := range wrapperScripts {
+		if _, err := os.Stat(script); os.IsNotExist(err) {
+			return fmt.Errorf("wrapper script not found: %s", script)
 		}
 	}
 

@@ -1,0 +1,42 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: docker-compose build
+
+    - name: Start service
+      run: docker-compose up -d
+
+    - name: Wait for service to be ready
+      run: |
+        timeout 30 bash -c 'until curl -sf http://localhost:8080/health; do sleep 1; done'
+
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+
+    - name: Run integration tests
+      run: |
+        chmod +x test_integration.sh
+        ./test_integration.sh
+
+    - name: Show service logs on failure
+      if: failure()
+      run: docker-compose logs
+
+    - name: Stop service
+      if: always()
+      run: docker-compose down

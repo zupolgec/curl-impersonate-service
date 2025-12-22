@@ -35,34 +35,30 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
     fi
 
 # Stage 3: Final runtime image
-FROM alpine:latest
+# Use Debian slim for glibc compatibility (curl-impersonate binaries need glibc)
+FROM debian:bookworm-slim
 
 # Install runtime dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    nss \
-    nss-tools \
-    libstdc++ \
-    libgcc \
-    wget
+    libnss3 \
+    libnss3-tools \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy Go service binary
 COPY --from=builder /build/impersonate-service /usr/local/bin/impersonate-service
 
-# Copy curl-impersonate binaries
+# Copy curl-impersonate binaries and wrapper scripts
 COPY --from=downloader /tmp/curl-impersonate-chrome /usr/local/bin/curl-impersonate-chrome
 COPY --from=downloader /tmp/curl-impersonate-ff /usr/local/bin/curl-impersonate-ff
-COPY --from=downloader /tmp/libcurl-impersonate-chrome.so* /usr/local/lib/
-COPY --from=downloader /tmp/libcurl-impersonate-ff.so* /usr/local/lib/
+COPY --from=downloader /tmp/curl_* /usr/local/bin/
 
-# Make binaries executable
-RUN chmod +x /usr/local/bin/curl-impersonate-chrome /usr/local/bin/curl-impersonate-ff
+# Make all executables executable
+RUN chmod +x /usr/local/bin/curl-impersonate-chrome /usr/local/bin/curl-impersonate-ff /usr/local/bin/curl_*
 
 # Copy browsers.json
 COPY browsers.json /etc/impersonate/browsers.json
-
-# Set library path
-ENV LD_LIBRARY_PATH=/usr/local/lib
 
 # Service configuration
 ENV PORT=8080
@@ -70,8 +66,8 @@ ENV BROWSERS_JSON_PATH=/etc/impersonate/browsers.json
 
 EXPOSE 8080
 
-# Create non-root user
-RUN adduser -D -u 1000 impersonate
+# Create non-root user (Debian syntax)
+RUN useradd -m -u 1000 -s /bin/bash impersonate
 USER impersonate
 
 # Health check

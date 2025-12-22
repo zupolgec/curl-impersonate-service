@@ -1,12 +1,10 @@
 package executor
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os/exec"
@@ -14,11 +12,6 @@ import (
 	"strings"
 
 	"github.com/zupolgec/curl-impersonate-service/models"
-)
-
-const (
-	curlImpersonateChrome = "/usr/local/bin/curl-impersonate-chrome"
-	curlImpersonateFF     = "/usr/local/bin/curl-impersonate-ff"
 )
 
 type CurlTiming struct {
@@ -36,11 +29,8 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 		return nil, fmt.Errorf("invalid URL: %w", err)
 	}
 
-	// Determine binary path
-	binaryPath, err := getBinaryPath(browserConfig.Binary)
-	if err != nil {
-		return nil, err
-	}
+	// Use the wrapper script which sets the correct browser signature
+	wrapperScript := "/usr/local/bin/" + browserConfig.WrapperScript
 
 	// Build curl command
 	args, err := buildCurlArgs(req, finalURL)
@@ -48,8 +38,8 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 		return nil, err
 	}
 
-	// Execute curl
-	cmd := exec.Command(binaryPath, args...)
+	// Execute curl via wrapper script
+	cmd := exec.Command(wrapperScript, args...)
 	output, err := cmd.CombinedOutput()
 
 	// Parse response even if there's an error (might be network error)
@@ -58,17 +48,6 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 	}
 
 	return parseSuccessResponse(output, finalURL)
-}
-
-func getBinaryPath(binaryName string) (string, error) {
-	switch binaryName {
-	case "curl-impersonate-chrome":
-		return curlImpersonateChrome, nil
-	case "curl-impersonate-ff":
-		return curlImpersonateFF, nil
-	default:
-		return "", fmt.Errorf("unknown binary: %s", binaryName)
-	}
 }
 
 func mergeQueryParams(urlStr string, queryParams map[string]string) (string, error) {
@@ -133,32 +112,58 @@ func parseSuccessResponse(output []byte, requestedURL string) (*models.Impersona
 	responseData := parts[0]
 	timingData := parts[1]
 
-	// Parse HTTP response
-	reader := bufio.NewReader(bytes.NewReader(responseData))
-	resp, err := http.ReadResponse(reader, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse HTTP response: %w", err)
-	}
-	defer resp.Body.Close()
-
-	// Read body
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	// Parse timing
+	// Parse timing first
 	var timing CurlTiming
 	if err := json.Unmarshal(timingData, &timing); err != nil {
 		return nil, fmt.Errorf("failed to parse timing: %w", err)
 	}
 
+	// Split headers and body (separated by blank line)
+	headerBodySplit := bytes.SplitN(responseData, []byte("\r\n\r\n"), 2)
+	if len(headerBodySplit) < 2 {
+		headerBodySplit = bytes.SplitN(responseData, []byte("\n\n"), 2)
+	}
+	if len(headerBodySplit) != 2 {
+		return nil, fmt.Errorf("failed to split headers and body")
+	}
+
+	headerLines := bytes.Split(headerBodySplit[0], []byte("\n"))
+	bodyBytes := headerBodySplit[1]
+
+	// Parse status line (HTTP/1.1 200 OK or HTTP/2 200)
+	statusLine := string(bytes.TrimSpace(headerLines[0]))
+	var statusCode int
+	if strings.HasPrefix(statusLine, "HTTP/2 ") {
+		fmt.Sscanf(statusLine, "HTTP/2 %d", &statusCode)
+	} else if strings.HasPrefix(statusLine, "HTTP/1") {
+		fmt.Sscanf(statusLine, "HTTP/1.%d %d", new(int), &statusCode)
+	} else {
+		return nil, fmt.Errorf("unrecognized HTTP version: %s", statusLine)
+	}
+
+	// Parse headers
+	headers := make(map[string][]string)
+	for i := 1; i < len(headerLines); i++ {
+		line := string(bytes.TrimSpace(headerLines[i]))
+		if line == "" {
+			continue
+		}
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			// Normalize header names to canonical form
+			key = http.CanonicalHeaderKey(key)
+			headers[key] = append(headers[key], value)
+		}
+	}
+
 	// Build response
 	response := &models.ImpersonateResponse{
 		Success:    true,
-		StatusCode: resp.StatusCode,
-		Headers:    resp.Header,
-		FinalURL:   requestedURL, // curl doesn't easily provide final URL, use requested
+		StatusCode: statusCode,
+		Headers:    headers,
+		FinalURL:   requestedURL,
 		Timing: &models.Timing{
 			Total:         timing.TimeTotal,
 			NameLookup:    timing.TimeNameLookup,
@@ -168,7 +173,11 @@ func parseSuccessResponse(output []byte, requestedURL string) (*models.Impersona
 	}
 
 	// Determine if response is text or binary
-	contentType := resp.Header.Get("Content-Type")
+	contentType := ""
+	if ct, ok := headers["Content-Type"]; ok && len(ct) > 0 {
+		contentType = ct[0]
+	}
+
 	if isTextContent(contentType) {
 		response.Body = string(bodyBytes)
 		response.BodyBase64 = false
