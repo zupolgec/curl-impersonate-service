@@ -1,6 +1,6 @@
 services:
   impersonate-service:
-    build: .
+    image: ghcr.io/zupolgec/curl-impersonate-service:latest
     ports:
       - "8080:8080"
     environment:
