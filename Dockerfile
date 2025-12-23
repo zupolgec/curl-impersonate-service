@@ -21,6 +21,26 @@ FROM golang:1.21-alpine AS builder
 # Install build dependencies
 RUN apk add --no-cache gcc musl-dev pkgconfig
 
+WORKDIR /build
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy headers and libraries from downloader (needed for CGO)
+COPY --from=downloader /tmp/include /usr/local/include
+COPY --from=downloader /tmp/lib /usr/local/lib
+
+# Copy source code
+COPY . .
+
+# Build the binary for the target platform
+ARG TARGETARCH
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETARCH} go build \
+    -ldflags="-w -s" \
+    -o impersonate-service \
+    .
+
 # Stage 3: Final runtime image
 # Use Debian slim for glibc compatibility (curl-impersonate binaries need glibc)
 FROM debian:bookworm-slim
@@ -40,6 +60,10 @@ COPY --from=builder /build/impersonate-service /usr/local/bin/impersonate-servic
 COPY --from=downloader /tmp/curl-impersonate-chrome /usr/local/bin/curl-impersonate-chrome
 COPY --from=downloader /tmp/curl-impersonate-ff /usr/local/bin/curl-impersonate-ff
 COPY --from=downloader /tmp/curl_* /usr/local/bin/
+# Copy the libs for runtime linking
+COPY --from=downloader /tmp/lib/libcurl-impersonate* /usr/local/lib/
+# Refresh ldconfig to find the new libs
+RUN ldconfig
 
 # Make all executables executable
 RUN chmod +x /usr/local/bin/curl-impersonate-chrome /usr/local/bin/curl-impersonate-ff /usr/local/bin/curl_*
