@@ -1,3 +1,6 @@
+//go:build !cgo
+// +build !cgo
+
 package executor
 
 import (
@@ -6,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -48,25 +50,6 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 	}
 
 	return parseSuccessResponse(output, finalURL)
-}
-
-func mergeQueryParams(urlStr string, queryParams map[string]string) (string, error) {
-	if len(queryParams) == 0 {
-		return urlStr, nil
-	}
-
-	u, err := url.Parse(urlStr)
-	if err != nil {
-		return "", err
-	}
-
-	q := u.Query()
-	for key, value := range queryParams {
-		q.Set(key, value) // Set overwrites existing
-	}
-
-	u.RawQuery = q.Encode()
-	return u.String(), nil
 }
 
 func buildCurlArgs(req *models.ImpersonateRequest, finalURL string) ([]string, error) {
@@ -211,28 +194,4 @@ func parseErrorResponse(output []byte, cmdErr error) (*models.ImpersonateRespons
 		ErrorType:  errorType,
 		StatusCode: 0,
 	}, nil
-}
-
-func isTextContent(contentType string) bool {
-	if contentType == "" {
-		return true // default to text
-	}
-
-	textPrefixes := []string{
-		"text/",
-		"application/json",
-		"application/xml",
-		"application/javascript",
-		"application/x-www-form-urlencoded",
-		"application/ld+json",
-	}
-
-	contentType = strings.ToLower(contentType)
-	for _, prefix := range textPrefixes {
-		if strings.HasPrefix(contentType, prefix) {
-			return true
-		}
-	}
-
-	return false
 }

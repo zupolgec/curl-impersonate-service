@@ -1,18 +1,25 @@
 # Stage 1: Build Go binary
 FROM golang:1.21-alpine AS builder
 
+# Install build dependencies
+RUN apk add --no-cache gcc musl-dev pkgconfig
+
 WORKDIR /build
 
 # Copy go mod files
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy headers and libraries from downloader (needed for CGO)
+COPY --from=downloader /tmp/include /usr/local/include
+COPY --from=downloader /tmp/lib /usr/local/lib
+
 # Copy source code
 COPY . .
 
 # Build the binary for the target platform
 ARG TARGETARCH
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build \
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETARCH} go build \
     -ldflags="-w -s" \
     -o impersonate-service \
     .
