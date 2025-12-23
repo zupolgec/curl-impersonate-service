@@ -117,9 +117,9 @@ func parseSuccessResponse(output []byte, requestedURL string) (*models.Impersona
 	statusLine := string(bytes.TrimSpace(headerLines[0]))
 	var statusCode int
 	if strings.HasPrefix(statusLine, "HTTP/2 ") {
-		fmt.Sscanf(statusLine, "HTTP/2 %d", &statusCode)
+		_, _ = fmt.Sscanf(statusLine, "HTTP/2 %d", &statusCode)
 	} else if strings.HasPrefix(statusLine, "HTTP/1") {
-		fmt.Sscanf(statusLine, "HTTP/1.%d %d", new(int), &statusCode)
+		_, _ = fmt.Sscanf(statusLine, "HTTP/1.%d %d", new(int), &statusCode)
 	} else {
 		return nil, fmt.Errorf("unrecognized HTTP version: %s", statusLine)
 	}

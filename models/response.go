@@ -63,11 +63,11 @@ func WriteJSONError(w http.ResponseWriter, statusCode int, errorType, message st
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	resp := NewErrorResponse(errorType, message)
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 func WriteJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(data)
+	_ = json.NewEncoder(w).Encode(data)
 }
