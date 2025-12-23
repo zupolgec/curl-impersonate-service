@@ -1,25 +1,27 @@
-# Stage 1: Download curl-impersonate binaries
+# Stage 1: Download curl-impersonate binaries and libraries
 FROM alpine:latest AS downloader
 
 RUN apk add --no-cache wget tar ca-certificates
 
 WORKDIR /tmp
 
-# Download pre-compiled binaries for the target architecture
+# Download pre-compiled binaries and libraries for the target architecture
 ARG TARGETARCH
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
-        wget -q https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.aarch64-linux-gnu.tar.gz && \
-        tar -xzf curl-impersonate-v0.6.1.aarch64-linux-gnu.tar.gz; \
+        URL_BIN="https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.aarch64-linux-gnu.tar.gz" && \
+        URL_LIB="https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/libcurl-impersonate-v0.6.1.aarch64-linux-gnu.tar.gz" ; \
     else \
-        wget -q https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz && \
-        tar -xzf curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz; \
-    fi
+        URL_BIN="https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz" && \
+        URL_LIB="https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/libcurl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz" ; \
+    fi && \
+    wget -q $URL_BIN -O bin.tar.gz && tar -xzf bin.tar.gz && rm bin.tar.gz && \
+    wget -q $URL_LIB -O lib.tar.gz && mkdir -p lib && tar -xzf lib.tar.gz -C lib && rm lib.tar.gz
 
 # Stage 2: Build Go binary
 FROM golang:1.21-alpine AS builder
 
 # Install build dependencies
-RUN apk add --no-cache gcc musl-dev pkgconfig
+RUN apk add --no-cache gcc musl-dev pkgconfig curl-dev
 
 WORKDIR /build
 
@@ -27,16 +29,18 @@ WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy headers and libraries from downloader (needed for CGO)
-COPY --from=downloader /tmp/include /usr/local/include
-COPY --from=downloader /tmp/lib /usr/local/lib
-
 # Copy source code
 COPY . .
 
+# Copy libraries from downloader for linking
+COPY --from=downloader /tmp/lib/* /usr/local/lib/
+
 # Build the binary for the target platform
+# We point CGO_LDFLAGS to /usr/local/lib where our .so are
 ARG TARGETARCH
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETARCH} go build \
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETARCH} \
+    CGO_LDFLAGS="-L/usr/local/lib -lcurl-impersonate-chrome" \
+    go build \
     -ldflags="-w -s" \
     -o impersonate-service \
     .

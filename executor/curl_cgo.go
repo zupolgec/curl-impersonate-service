@@ -4,7 +4,7 @@
 package executor
 
 /*
-#cgo LDFLAGS: -lcurl
+#cgo LDFLAGS: -lcurl-impersonate-chrome
 #include <curl/curl.h>
 #include <stdlib.h>
 #include <string.h>
