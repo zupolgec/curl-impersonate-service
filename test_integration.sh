@@ -23,12 +23,12 @@ log_test() {
 
 log_pass() {
     echo -e "${GREEN}[PASS]${NC} $1"
-    ((TESTS_PASSED++))
+    ((TESTS_PASSED++)) || true
 }
 
 log_fail() {
     echo -e "${RED}[FAIL]${NC} $1"
-    ((TESTS_FAILED++))
+    ((TESTS_FAILED++)) || true
 }
 
 assert_eq() {
@@ -36,8 +36,8 @@ assert_eq() {
     local actual="$2"
     local message="$3"
     
-    ((TESTS_RUN++))
-    
+    ((TESTS_RUN++)) || true
+
     if [ "$expected" = "$actual" ]; then
         log_pass "$message"
         return 0
@@ -51,9 +51,9 @@ assert_contains() {
     local haystack="$1"
     local needle="$2"
     local message="$3"
-    
-    ((TESTS_RUN++))
-    
+
+    ((TESTS_RUN++)) || true
+
     if echo "$haystack" | grep -q "$needle"; then
         log_pass "$message"
         return 0
@@ -66,9 +66,9 @@ assert_contains() {
 assert_not_empty() {
     local value="$1"
     local message="$2"
-    
-    ((TESTS_RUN++))
-    
+
+    ((TESTS_RUN++)) || true
+
     if [ -n "$value" ]; then
         log_pass "$message"
         return 0
