@@ -71,9 +71,9 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 	cBrowser := C.CString(browserConfig.Name)
 	defer C.free(unsafe.Pointer(cBrowser))
 	// 1 means add default headers
-	res := C.curl_easy_impersonate(curl, cBrowser, 1)
-	if res != 0 {
-		return nil, fmt.Errorf("failed to impersonate %s: %d", browserConfig.Name, int(res))
+	impersonateRes := C.curl_easy_impersonate(curl, cBrowser, 1)
+	if impersonateRes != 0 {
+		return nil, fmt.Errorf("failed to impersonate %s: %d", browserConfig.Name, int(impersonateRes))
 	}
 
 	// Set Headers
@@ -123,7 +123,7 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 	C._curl_easy_setopt_ptr(curl, C.CURLOPT_HEADERDATA, unsafe.Pointer(&headerBuf))
 
 	// Execute
-	res = C.curl_easy_perform(curl)
+	res := C.curl_easy_perform(curl)
 
 	// Handle Cleanup for buffers
 	defer func() {

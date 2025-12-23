@@ -1,5 +1,6 @@
+// This file is compiled separately and needs the REAL curl functions,
+// not the shielded versions. Include curl.h directly WITHOUT the shielding.
 #include <curl/curl.h>
-#include "curl_wrappers.h"
 
 CURLcode _curl_easy_setopt_ptr(CURL *curl, CURLoption option, void *param) {
     return curl_easy_setopt(curl, option, param);
