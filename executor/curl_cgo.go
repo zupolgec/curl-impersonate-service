@@ -46,6 +46,12 @@ type responseBuffer struct {
 }
 
 func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig) (*models.ImpersonateResponse, error) {
+	// CGO executor only supports Chrome-based browsers (uses libcurl-impersonate-chrome)
+	// Firefox browsers need the Firefox SSL library, so fall back to shell execution
+	if browserConfig.Binary == "curl-impersonate-ff" {
+		return executeShell(req, browserConfig)
+	}
+
 	// Initialize curl
 	curl := C.curl_easy_init()
 	if curl == nil {
