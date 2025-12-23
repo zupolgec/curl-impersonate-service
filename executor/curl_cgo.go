@@ -32,16 +32,7 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userdata) {
 // Actually we link against a version that HAS it.
 extern int curl_easy_impersonate(CURL *curl, const char *target, int default_headers);
 
-// Wrappers for variadic functions to avoid CGO issues
-static CURLcode _curl_easy_setopt_ptr(CURL *curl, CURLoption option, void *param) {
-    return curl_easy_setopt(curl, option, param);
-}
-static CURLcode _curl_easy_setopt_long(CURL *curl, CURLoption option, long param) {
-    return curl_easy_setopt(curl, option, param);
-}
-static CURLcode _curl_easy_getinfo_ptr(CURL *curl, CURLINFO info, void *param) {
-    return curl_easy_getinfo(curl, info, param);
-}
+#include "curl_wrappers.h"
 */
 import "C"
 
