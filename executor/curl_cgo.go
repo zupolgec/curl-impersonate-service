@@ -5,9 +5,9 @@ package executor
 
 /*
 #cgo LDFLAGS: -lcurl-impersonate-chrome
-#include <curl/curl.h>
 #include <stdlib.h>
 #include <string.h>
+#include "curl_wrappers.h"
 
 // Callback to write response data to a buffer
 size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userdata) {
@@ -27,12 +27,6 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userdata) {
 
     return realsize;
 }
-
-// Function to call curl_easy_impersonate if it exists (for dynamic linking)
-// Actually we link against a version that HAS it.
-extern int curl_easy_impersonate(CURL *curl, const char *target, int default_headers);
-
-#include "curl_wrappers.h"
 */
 import "C"
 
