@@ -17,11 +17,16 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
     wget -q $URL_BIN -O bin.tar.gz && tar -xzf bin.tar.gz && rm bin.tar.gz && \
     wget -q $URL_LIB -O lib.tar.gz && mkdir -p lib && tar -xzf lib.tar.gz -C lib && rm lib.tar.gz
 
-# Stage 2: Build Go binary
-FROM golang:1.21-alpine AS builder
+# Stage 2: Build Go binary (Use Debian for GLIBC compatibility)
+FROM golang:1.21-bookworm AS builder
 
 # Install build dependencies
-RUN apk add --no-cache gcc musl-dev pkgconfig curl-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libc6-dev \
+    pkg-config \
+    libcurl4-openssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -36,7 +41,6 @@ COPY . .
 COPY --from=downloader /tmp/lib/* /usr/local/lib/
 
 # Build the binary for the target platform
-# We point CGO_LDFLAGS to /usr/local/lib where our .so are
 ARG TARGETARCH
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETARCH} \
     CGO_LDFLAGS="-L/usr/local/lib -lcurl-impersonate-chrome" \
@@ -46,7 +50,6 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETARCH} \
     .
 
 # Stage 3: Final runtime image
-# Use Debian slim for glibc compatibility (curl-impersonate binaries need glibc)
 FROM debian:bookworm-slim
 
 # Install runtime dependencies
@@ -81,7 +84,7 @@ ENV BROWSERS_JSON_PATH=/etc/impersonate/browsers.json
 
 EXPOSE 8080
 
-# Create non-root user (Debian syntax)
+# Create non-root user
 RUN useradd -m -u 1000 -s /bin/bash impersonate
 USER impersonate
 
