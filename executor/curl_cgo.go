@@ -121,7 +121,7 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 
 	// Set Redirects
 	if req.FollowRedirects {
-		C.curl_easy_setopt(curl, C.CURLOPT_FOLLOWLOCATION, 1)
+		C._curl_easy_setopt_long(curl, C.CURLOPT_FOLLOWLOCATION, 1)
 	}
 
 	// Set Timeout
