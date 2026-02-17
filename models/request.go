@@ -14,6 +14,7 @@ type ImpersonateRequest struct {
 	Body            string            `json:"body"`
 	BodyBase64      string            `json:"body_base64"`
 	FollowRedirects bool              `json:"follow_redirects"`
+	Insecure        bool              `json:"insecure"`
 	Timeout         int               `json:"timeout"`
 }
 

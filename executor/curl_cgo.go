@@ -118,6 +118,13 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 	// Set Timeout
 	C._curl_easy_setopt_long(curl, C.CURLOPT_TIMEOUT, C.long(req.Timeout))
 
+	// Disable SSL verification if requested
+	// CURLOPT_SSL_VERIFYPEER = 64, CURLOPT_SSL_VERIFYHOST = 81
+	if req.Insecure {
+		C._curl_easy_setopt_long(curl, 64, 0)
+		C._curl_easy_setopt_long(curl, 81, 0)
+	}
+
 	// Setup Response Buffers
 	var respBuf responseBuffer
 	var headerBuf responseBuffer

@@ -62,6 +62,10 @@ func buildCurlArgs(req *models.ImpersonateRequest, finalURL string) ([]string, e
 		args = append(args, "-L")
 	}
 
+	if req.Insecure {
+		args = append(args, "--insecure")
+	}
+
 	// Add custom headers
 	for key, value := range req.Headers {
 		args = append(args, "-H", fmt.Sprintf("%s: %s", key, value))

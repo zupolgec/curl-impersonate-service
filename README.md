@@ -135,6 +135,7 @@ Make an HTTP request impersonating a browser (authentication required).
   "body": "request body",
   "body_base64": "base64-encoded-binary-data",
   "follow_redirects": true,
+  "insecure": false,
   "timeout": 30
 }
 ```
@@ -148,6 +149,7 @@ Make an HTTP request impersonating a browser (authentication required).
 - `body` (optional): Request body as string (mutually exclusive with `body_base64`)
 - `body_base64` (optional): Request body as base64 string for binary data
 - `follow_redirects` (optional): Follow HTTP redirects. Default: `true`
+- `insecure` (optional): Skip SSL certificate verification. Default: `false`
 - `timeout` (optional): Request timeout in seconds. Default: `30`, Max: `120`
 
 **Success Response (200 OK):**
@@ -422,6 +424,11 @@ server {
 ### Binary response appears corrupted
 - Check if `body_base64` is `true` in the response
 - Decode base64 before using: `echo $BODY | base64 -d > file.bin`
+
+### SSL certificate errors
+- If you get `error_type: "ssl"` with a message about peer certificate verification, the target server may have an invalid, self-signed, or expired certificate
+- Set `"insecure": true` in your request to skip SSL certificate verification
+- **Warning**: Only use `insecure` when you understand the security implications
 
 ### Timeout errors
 - Increase timeout in request or `MAX_TIMEOUT` environment variable
