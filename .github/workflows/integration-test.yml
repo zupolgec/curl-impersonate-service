@@ -6,29 +6,32 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  COMPOSE_FILE: docker-compose.integration.yml
+
 jobs:
   integration-test:
     name: Integration Tests
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Build Docker image
-      run: docker compose build
-
-    - name: Start service
-      run: docker compose up -d
+    - name: Build and start stack
+      run: docker compose up -d --build
 
     - name: Wait for service to be ready
       run: |
-        timeout 30 bash -c 'until curl -sf http://localhost:8080/health; do sleep 1; done'
+        timeout 60 bash -c 'until curl -sf http://localhost:8080/health; do sleep 1; done'
 
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
 
     - name: Run integration tests
+      env:
+        # Reach the go-httpbin sidecar via the Docker network hostname.
+        HTTPBIN_URL: http://httpbin:8080
       run: |
         chmod +x test_integration.sh
         ./test_integration.sh
@@ -37,6 +40,6 @@ jobs:
       if: failure()
       run: docker compose logs
 
-    - name: Stop service
+    - name: Stop stack
       if: always()
-      run: docker compose down
+      run: docker compose down -v

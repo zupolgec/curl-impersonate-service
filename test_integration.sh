@@ -12,6 +12,9 @@ NC='\033[0m' # No Color
 
 BASE_URL="${BASE_URL:-http://localhost:8080}"
 TOKEN="${TOKEN:-test-token-123}"
+# Target echo server as seen by the impersonate service. Defaults to the public
+# httpbin.org; CI overrides this with a hermetic sidecar to avoid flakiness.
+HTTPBIN_URL="${HTTPBIN_URL:-https://httpbin.org}"
 
 TESTS_RUN=0
 TESTS_PASSED=0
@@ -108,7 +111,7 @@ echo
 log_test "Chrome 116 impersonation"
 CHROME_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"chrome116","url":"https://httpbin.org/get"}')
+  -d '{"browser":"chrome116","url":"'"$HTTPBIN_URL"'/get"}')
 
 assert_eq "true" "$(echo "$CHROME_RESPONSE" | jq -r '.success')" "Chrome request succeeds"
 assert_eq "200" "$(echo "$CHROME_RESPONSE" | jq -r '.status_code')" "Chrome request returns 200"
@@ -124,7 +127,7 @@ echo
 log_test "Firefox 109 impersonation"
 FF_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"ff109","url":"https://httpbin.org/get"}')
+  -d '{"browser":"ff109","url":"'"$HTTPBIN_URL"'/get"}')
 
 assert_eq "true" "$(echo "$FF_RESPONSE" | jq -r '.success')" "Firefox request succeeds"
 assert_eq "200" "$(echo "$FF_RESPONSE" | jq -r '.status_code')" "Firefox request returns 200"
@@ -138,7 +141,7 @@ echo
 log_test "Browser alias (chrome-latest)"
 ALIAS_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"chrome-latest","url":"https://httpbin.org/get"}')
+  -d '{"browser":"chrome-latest","url":"'"$HTTPBIN_URL"'/get"}')
 
 assert_eq "true" "$(echo "$ALIAS_RESPONSE" | jq -r '.success')" "Browser alias works"
 echo
@@ -147,7 +150,7 @@ echo
 log_test "POST request with body"
 POST_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"chrome116","url":"https://httpbin.org/post","method":"POST","body":"{\"test\":\"data\"}"}')
+  -d '{"browser":"chrome116","url":"'"$HTTPBIN_URL"'/post","method":"POST","body":"{\"test\":\"data\"}"}')
 
 assert_eq "true" "$(echo "$POST_RESPONSE" | jq -r '.success')" "POST request succeeds"
 assert_eq "200" "$(echo "$POST_RESPONSE" | jq -r '.status_code')" "POST request returns 200"
@@ -157,10 +160,11 @@ echo
 log_test "Custom headers"
 HEADERS_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"chrome116","url":"https://httpbin.org/headers","headers":{"X-Custom-Test":"test-value"}}')
+  -d '{"browser":"chrome116","url":"'"$HTTPBIN_URL"'/headers","headers":{"X-Custom-Test":"test-value"}}')
 
 assert_eq "true" "$(echo "$HEADERS_RESPONSE" | jq -r '.success')" "Custom headers request succeeds"
-CUSTOM_HEADER=$(echo "$HEADERS_RESPONSE" | jq -r '.body | fromjson | .headers."X-Custom-Test"')
+# httpbin.org returns header values as strings; go-httpbin returns arrays.
+CUSTOM_HEADER=$(echo "$HEADERS_RESPONSE" | jq -r '.body | fromjson | .headers."X-Custom-Test" | if type=="array" then .[0] else . end')
 assert_eq "test-value" "$CUSTOM_HEADER" "Custom header is sent"
 echo
 
@@ -168,7 +172,7 @@ echo
 log_test "Query parameters"
 QUERY_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"chrome116","url":"https://httpbin.org/get","query_params":{"foo":"bar","test":"123"}}')
+  -d '{"browser":"chrome116","url":"'"$HTTPBIN_URL"'/get","query_params":{"foo":"bar","test":"123"}}')
 
 assert_eq "true" "$(echo "$QUERY_RESPONSE" | jq -r '.success')" "Query params request succeeds"
 assert_contains "$(echo "$QUERY_RESPONSE" | jq -r '.body | fromjson | .url')" "foo=bar" "Query param foo added"
@@ -179,7 +183,7 @@ echo
 log_test "Invalid browser name"
 INVALID_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"invalid-browser","url":"https://httpbin.org/get"}')
+  -d '{"browser":"invalid-browser","url":"'"$HTTPBIN_URL"'/get"}')
 
 assert_eq "false" "$(echo "$INVALID_RESPONSE" | jq -r '.success')" "Invalid browser fails"
 assert_eq "validation" "$(echo "$INVALID_RESPONSE" | jq -r '.error_type')" "Invalid browser returns validation error"
@@ -189,7 +193,7 @@ echo
 log_test "Timing information"
 TIMING_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"chrome116","url":"https://httpbin.org/get"}')
+  -d '{"browser":"chrome116","url":"'"$HTTPBIN_URL"'/get"}')
 
 TOTAL_TIME=$(echo "$TIMING_RESPONSE" | jq -r '.timing.total')
 assert_not_empty "$TOTAL_TIME" "Timing total is present"

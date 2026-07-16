@@ -1,0 +1,27 @@
+# Hermetic integration-test stack: the impersonate service plus a local
+# go-httpbin echo server, so tests don't depend on the public httpbin.org.
+services:
+  impersonate-service:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - TOKEN=test-token-123
+      - LOG_LEVEL=info
+      - PORT=8080
+      - DATA_DIR=/data
+      # The httpbin sidecar has a private (Docker network) IP, so allow it.
+      - SSRF_ALLOW_PRIVATE=true
+    depends_on:
+      - httpbin
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  httpbin:
+    image: mccutchen/go-httpbin:v2.15.0
+    expose:
+      - "8080"
