@@ -1,6 +1,6 @@
 # curl-impersonate-service
 
-A Docker-based REST API service that wraps [curl-impersonate](https://github.com/lwthiker/curl-impersonate) to provide browser impersonation as a service. Make HTTP requests that appear to come from real browsers (Chrome, Firefox, Edge, Safari) to bypass TLS and HTTP/2 fingerprinting.
+A Docker-based REST API service that wraps [curl-impersonate](https://github.com/lexiforest/curl-impersonate) to provide browser impersonation as a service. Make HTTP requests that appear to come from real browsers (Chrome, Firefox, Edge, Safari, Tor) to bypass TLS and HTTP/2 fingerprinting.
 
 [![Test](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/test.yml/badge.svg)](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/test.yml)
 [![Docker Build](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/docker.yml/badge.svg)](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/docker.yml)
@@ -11,7 +11,7 @@ A Docker-based REST API service that wraps [curl-impersonate](https://github.com
 
 ## Features
 
-- **19 Browser Profiles**: Impersonate Chrome, Firefox, Edge, and Safari across different versions
+- **31 Browser Profiles**: Impersonate Chrome, Firefox, Edge, Safari (incl. iOS) and Tor across recent versions (Chrome up to 136, Safari up to 26.0)
 - **Full HTTP Support**: All HTTP methods (GET, POST, PUT, PATCH, DELETE, etc.)
 - **Custom Headers & Query Params**: Full control over request customization
 - **Binary Data Support**: Base64 encoding for request and response bodies
@@ -224,12 +224,15 @@ Error types: `network`, `dns`, `timeout`, `ssl`, `size`
 
 | Browser | Versions | Alias |
 |---------|----------|-------|
-| Chrome | 99, 100, 101, 104, 107, 110, 116 | `chrome-latest` |
-| Firefox | 91esr, 95, 98, 100, 102, 109, 117 | `firefox-latest` |
-| Edge | 99, 101 | `edge-latest` |
-| Safari | 15.3, 15.5 | `safari-latest` |
+| Chrome | 99, 100, 101, 104, 107, 110, 116, 119, 120, 123, 124, 131, 133a, 136 (+ android) | `chrome-latest` → `chrome136` |
+| Firefox | 133, 135 | `firefox-latest` → `firefox135` |
+| Edge | 99, 101 | `edge-latest` → `edge101` |
+| Safari | 15.3, 15.5, 17.0, 18.0, 18.4, 26.0 (+ iOS variants) | `safari-latest` → `safari260` |
+| Tor | 14.5 | `tor-latest` → `tor145` |
 
-Default browser: `chrome116` (chrome-latest)
+Default browser: `chrome136` (chrome-latest)
+
+Powered by the actively-maintained [lexiforest/curl-impersonate](https://github.com/lexiforest/curl-impersonate) fork.
 
 See full list: [browsers.json](browsers.json)
 
@@ -512,7 +515,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Credits
 
-- Built on [curl-impersonate](https://github.com/lwthiker/curl-impersonate) by lwthiker
+- Built on [curl-impersonate](https://github.com/lexiforest/curl-impersonate) (lexiforest fork; originally by lwthiker)
 - Inspired by the need for browser impersonation in web scraping and testing
 
 ## Support

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-16
+
+### Changed
+- Migrated to the actively-maintained [lexiforest/curl-impersonate](https://github.com/lexiforest/curl-impersonate)
+  fork (v1.2.2); the original lwthiker project is archived.
+- Browser profiles expanded from 19 to 31, including recent versions
+  (Chrome up to 136, Firefox 133/135, Safari up to 26.0 with iOS variants, Tor 14.5).
+- Unified `libcurl-impersonate` means the CGO executor now handles **all**
+  browsers (including Firefox) natively, removing the shell fallback path.
+- Default browser is now `chrome136`; `firefox-latest`→`firefox135`,
+  `safari-latest`→`safari260`; added `tor-latest`→`tor145`.
+
+### Note
+- Old Firefox profile names (`ff91esr`…`ff117`) are replaced by `firefox133`/
+  `firefox135`. Update any hardcoded browser names accordingly.
+
 ## [1.1.1] - 2026-07-16
 
 ### Fixed
@@ -86,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines
 - MIT License
 
+[1.2.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.2.0
 [1.1.1]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.1.1
 [1.1.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.1.0
 [1.0.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.0.0

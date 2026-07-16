@@ -10,11 +10,12 @@ func TestResolveBrowserName(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"empty returns default", "", "chrome116"},
-		{"chrome-latest alias", "chrome-latest", "chrome116"},
-		{"firefox-latest alias", "firefox-latest", "ff117"},
+		{"empty returns default", "", "chrome136"},
+		{"chrome-latest alias", "chrome-latest", "chrome136"},
+		{"firefox-latest alias", "firefox-latest", "firefox135"},
 		{"edge-latest alias", "edge-latest", "edge101"},
-		{"safari-latest alias", "safari-latest", "safari15_5"},
+		{"safari-latest alias", "safari-latest", "safari260"},
+		{"tor-latest alias", "tor-latest", "tor145"},
 		{"direct browser name", "chrome99", "chrome99"},
 		{"unknown browser passthrough", "unknown", "unknown"},
 	}
@@ -36,14 +37,14 @@ func TestGetAliases(t *testing.T) {
 		t.Error("GetAliases() returned empty map")
 	}
 
-	if aliases["chrome-latest"] != "chrome116" {
+	if aliases["chrome-latest"] != "chrome136" {
 		t.Errorf("chrome-latest alias incorrect, got %q", aliases["chrome-latest"])
 	}
 }
 
 func TestGetDefaultBrowser(t *testing.T) {
 	defaultBrowser := GetDefaultBrowser()
-	if defaultBrowser != "chrome116" {
-		t.Errorf("GetDefaultBrowser() = %q, want %q", defaultBrowser, "chrome116")
+	if defaultBrowser != "chrome136" {
+		t.Errorf("GetDefaultBrowser() = %q, want %q", defaultBrowser, "chrome136")
 	}
 }

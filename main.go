@@ -160,8 +160,8 @@ func startLogJanitor(st *store.Store, retention time.Duration) func() {
 func verifyBinaries() error {
 	// Check a few key wrapper scripts exist
 	wrapperScripts := []string{
-		"/usr/local/bin/curl_chrome116",
-		"/usr/local/bin/curl_ff109",
+		"/usr/local/bin/curl_chrome136",
+		"/usr/local/bin/curl_firefox135",
 	}
 
 	for _, script := range wrapperScripts {

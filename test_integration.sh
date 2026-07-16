@@ -127,7 +127,7 @@ echo
 log_test "Firefox 109 impersonation"
 FF_RESPONSE=$(curl -s -X POST "$BASE_URL/impersonate?token=$TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"browser":"ff109","url":"'"$HTTPBIN_URL"'/get"}')
+  -d '{"browser":"firefox135","url":"'"$HTTPBIN_URL"'/get"}')
 
 assert_eq "true" "$(echo "$FF_RESPONSE" | jq -r '.success')" "Firefox request succeeds"
 assert_eq "200" "$(echo "$FF_RESPONSE" | jq -r '.status_code')" "Firefox request returns 200"

@@ -5,15 +5,14 @@ RUN apk add --no-cache wget tar ca-certificates
 
 WORKDIR /tmp
 
-# Download pre-compiled binaries and libraries for the target architecture
+# Download pre-compiled binaries and libraries for the target architecture.
+# Uses the actively-maintained lexiforest fork (lwthiker's is archived).
+ARG CURL_IMPERSONATE_VERSION=v1.2.2
 ARG TARGETARCH
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-        URL_BIN="https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.aarch64-linux-gnu.tar.gz" && \
-        URL_LIB="https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/libcurl-impersonate-v0.6.1.aarch64-linux-gnu.tar.gz" ; \
-    else \
-        URL_BIN="https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz" && \
-        URL_LIB="https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/libcurl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz" ; \
-    fi && \
+RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH="aarch64"; else ARCH="x86_64"; fi && \
+    BASE="https://github.com/lexiforest/curl-impersonate/releases/download/${CURL_IMPERSONATE_VERSION}" && \
+    URL_BIN="${BASE}/curl-impersonate-${CURL_IMPERSONATE_VERSION}.${ARCH}-linux-gnu.tar.gz" && \
+    URL_LIB="${BASE}/libcurl-impersonate-${CURL_IMPERSONATE_VERSION}.${ARCH}-linux-gnu.tar.gz" && \
     wget -q $URL_BIN -O bin.tar.gz && tar -xzf bin.tar.gz && rm bin.tar.gz && \
     wget -q $URL_LIB -O lib.tar.gz && mkdir -p lib && tar -xzf lib.tar.gz -C lib && rm lib.tar.gz
 
@@ -43,7 +42,7 @@ COPY --from=downloader /tmp/lib/* /usr/local/lib/
 # Build the binary for the target platform
 ARG TARGETARCH
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETARCH} \
-    CGO_LDFLAGS="-L/usr/local/lib -lcurl-impersonate-chrome" \
+    CGO_LDFLAGS="-L/usr/local/lib -lcurl-impersonate" \
     go build \
     -ldflags="-w -s" \
     -o impersonate-service \
@@ -63,9 +62,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy Go service binary
 COPY --from=builder /build/impersonate-service /usr/local/bin/impersonate-service
 
-# Copy curl-impersonate binaries and wrapper scripts
-COPY --from=downloader /tmp/curl-impersonate-chrome /usr/local/bin/curl-impersonate-chrome
-COPY --from=downloader /tmp/curl-impersonate-ff /usr/local/bin/curl-impersonate-ff
+# Copy the unified curl-impersonate binary and the wrapper scripts
+COPY --from=downloader /tmp/curl-impersonate /usr/local/bin/curl-impersonate
 COPY --from=downloader /tmp/curl_* /usr/local/bin/
 # Copy the libs for runtime linking
 COPY --from=downloader /tmp/lib/libcurl-impersonate* /usr/local/lib/
@@ -73,7 +71,7 @@ COPY --from=downloader /tmp/lib/libcurl-impersonate* /usr/local/lib/
 RUN ldconfig
 
 # Make all executables executable
-RUN chmod +x /usr/local/bin/curl-impersonate-chrome /usr/local/bin/curl-impersonate-ff /usr/local/bin/curl_*
+RUN chmod +x /usr/local/bin/curl-impersonate /usr/local/bin/curl_*
 
 # Copy browsers.json
 COPY browsers.json /etc/impersonate/browsers.json

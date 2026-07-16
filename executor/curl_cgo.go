@@ -4,7 +4,7 @@
 package executor
 
 /*
-#cgo LDFLAGS: -lcurl-impersonate-chrome
+#cgo LDFLAGS: -lcurl-impersonate
 #include <stdlib.h>
 #include <string.h>
 #include "curl_wrappers.h"
@@ -58,11 +58,9 @@ type responseBuffer struct {
 }
 
 func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig, maxResponseSize int64) (*models.ImpersonateResponse, error) {
-	// CGO executor only supports Chrome-based browsers (uses libcurl-impersonate-chrome)
-	// Firefox browsers need the Firefox SSL library, so fall back to shell execution
-	if browserConfig.Binary == "curl-impersonate-ff" {
-		return executeShell(req, browserConfig, maxResponseSize)
-	}
+	// The lexiforest fork ships a single unified libcurl-impersonate that
+	// supports every target (Chrome, Firefox, Safari, Edge, Tor), so all
+	// browsers go through the CGO path.
 
 	// Initialize curl
 	curl := C.curl_easy_init()

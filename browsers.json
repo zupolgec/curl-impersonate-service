@@ -1,23 +1,13 @@
 {
     "browsers": [
         {
-            "name": "chrome99",
-            "browser": {
-                "name": "chrome",
-                "version": "99.0.4844.51",
-                "os": "win10"
-            },
-            "binary": "curl-impersonate-chrome",
-            "wrapper_script": "curl_chrome99"
-        },
-        {
             "name": "chrome100",
             "browser": {
                 "name": "chrome",
-                "version": "100.0.4896.127",
+                "version": "100.0.4896.75",
                 "os": "win10"
             },
-            "binary": "curl-impersonate-chrome",
+            "binary": "curl-impersonate",
             "wrapper_script": "curl_chrome100"
         },
         {
@@ -27,169 +17,304 @@
                 "version": "101.0.4951.67",
                 "os": "win10"
             },
-            "binary": "curl-impersonate-chrome",
+            "binary": "curl-impersonate",
             "wrapper_script": "curl_chrome101"
         },
         {
             "name": "chrome104",
             "browser": {
                 "name": "chrome",
-                "version": "104.0.5112.81",
+                "version": "104.0.0.0",
                 "os": "win10"
             },
-            "binary": "curl-impersonate-chrome",
+            "binary": "curl-impersonate",
             "wrapper_script": "curl_chrome104"
         },
         {
             "name": "chrome107",
             "browser": {
                 "name": "chrome",
-                "version": "107.0.5304.107",
+                "version": "107.0.0.0",
                 "os": "win10"
             },
-            "binary": "curl-impersonate-chrome",
+            "binary": "curl-impersonate",
             "wrapper_script": "curl_chrome107"
         },
         {
             "name": "chrome110",
             "browser": {
                 "name": "chrome",
-                "version": "110.0.5481.177",
+                "version": "110.0.0.0",
                 "os": "win10"
             },
-            "binary": "curl-impersonate-chrome",
+            "binary": "curl-impersonate",
             "wrapper_script": "curl_chrome110"
         },
         {
             "name": "chrome116",
             "browser": {
                 "name": "chrome",
-                "version": "116.0.5845.180",
+                "version": "116.0.0.0",
                 "os": "win10"
             },
-            "binary": "curl-impersonate-chrome",
+            "binary": "curl-impersonate",
             "wrapper_script": "curl_chrome116"
+        },
+        {
+            "name": "chrome119",
+            "browser": {
+                "name": "chrome",
+                "version": "119.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome119"
+        },
+        {
+            "name": "chrome120",
+            "browser": {
+                "name": "chrome",
+                "version": "120.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome120"
+        },
+        {
+            "name": "chrome123",
+            "browser": {
+                "name": "chrome",
+                "version": "123.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome123"
+        },
+        {
+            "name": "chrome124",
+            "browser": {
+                "name": "chrome",
+                "version": "124.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome124"
+        },
+        {
+            "name": "chrome131",
+            "browser": {
+                "name": "chrome",
+                "version": "131.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome131"
+        },
+        {
+            "name": "chrome131_android",
+            "browser": {
+                "name": "chrome",
+                "version": "131.0.0.0",
+                "os": "android",
+                "device": "pixel6"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome131_android"
+        },
+        {
+            "name": "chrome133a",
+            "browser": {
+                "name": "chrome",
+                "version": "133.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome133a"
+        },
+        {
+            "name": "chrome136",
+            "browser": {
+                "name": "chrome",
+                "version": "136.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome136"
+        },
+        {
+            "name": "chrome99",
+            "browser": {
+                "name": "chrome",
+                "version": "99.0.4844.51",
+                "os": "win10"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome99"
         },
         {
             "name": "chrome99_android",
             "browser": {
                 "name": "chrome",
-                "version": "99.0.4844.73",
-                "os": "android12",
+                "version": "99.0.4844.58",
+                "os": "android",
                 "device": "pixel6"
             },
-            "binary": "curl-impersonate-chrome",
+            "binary": "curl-impersonate",
             "wrapper_script": "curl_chrome99_android"
-        },
-        {
-            "name": "edge99",
-            "browser": {
-                "name": "edge",
-                "version": "99.0.1150.30",
-                "os": "win10"
-            },
-            "binary": "curl-impersonate-chrome",
-            "wrapper_script": "curl_edge99"
         },
         {
             "name": "edge101",
             "browser": {
                 "name": "edge",
-                "version": "101.0.1210.47",
+                "version": "101.0.4951.64",
                 "os": "win10"
             },
-            "binary": "curl-impersonate-chrome",
+            "binary": "curl-impersonate",
             "wrapper_script": "curl_edge101"
         },
         {
-            "name": "ff91esr",
+            "name": "edge99",
             "browser": {
-                "name": "firefox",
-                "version": "91.6.0esr",
+                "name": "edge",
+                "version": "99.0.4844.51",
                 "os": "win10"
             },
-            "binary": "curl-impersonate-ff",
-            "wrapper_script": "curl_ff91esr"
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_edge99"
         },
         {
-            "name": "ff95",
+            "name": "firefox133",
             "browser": {
                 "name": "firefox",
-                "version": "95.0.2",
-                "os": "win10"
+                "version": "133.0",
+                "os": "macos"
             },
-            "binary": "curl-impersonate-ff",
-            "wrapper_script": "curl_ff95"
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_firefox133"
         },
         {
-            "name": "ff98",
+            "name": "firefox135",
             "browser": {
                 "name": "firefox",
-                "version": "98.0",
-                "os": "win10"
+                "version": "135.0",
+                "os": "macos"
             },
-            "binary": "curl-impersonate-ff",
-            "wrapper_script": "curl_ff98"
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_firefox135"
         },
         {
-            "name": "ff100",
-            "browser": {
-                "name": "firefox",
-                "version": "100.0",
-                "os": "win10"
-            },
-            "binary": "curl-impersonate-ff",
-            "wrapper_script": "curl_ff100"
-        },
-        {
-            "name": "ff102",
-            "browser": {
-                "name": "firefox",
-                "version": "102.0",
-                "os": "win10"
-            },
-            "binary": "curl-impersonate-ff",
-            "wrapper_script": "curl_ff102"
-        },
-        {
-            "name": "ff109",
-            "browser": {
-                "name": "firefox",
-                "version": "109.0",
-                "os": "win10"
-            },
-            "binary": "curl-impersonate-ff",
-            "wrapper_script": "curl_ff109"
-        },
-        {
-            "name": "ff117",
-            "browser": {
-                "name": "firefox",
-                "version": "117.0.1",
-                "os": "win10"
-            },
-            "binary": "curl-impersonate-ff",
-            "wrapper_script": "curl_ff117"
-        },
-        {
-            "name": "safari15_3",
+            "name": "safari153",
             "browser": {
                 "name": "safari",
                 "version": "15.3",
-                "os": "macos11.6.4"
+                "os": "macos"
             },
-            "binary": "curl-impersonate-chrome",
-            "wrapper_script": "curl_safari15_3"
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari153"
         },
         {
-            "name": "safari15_5",
+            "name": "safari155",
             "browser": {
                 "name": "safari",
                 "version": "15.5",
-                "os": "macos12.4"
+                "os": "macos"
             },
-            "binary": "curl-impersonate-chrome",
-            "wrapper_script": "curl_safari15_5"
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari155"
+        },
+        {
+            "name": "safari170",
+            "browser": {
+                "name": "safari",
+                "version": "17.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari170"
+        },
+        {
+            "name": "safari172_ios",
+            "browser": {
+                "name": "safari",
+                "version": "17.2",
+                "os": "ios",
+                "device": "iphone"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari172_ios"
+        },
+        {
+            "name": "safari180",
+            "browser": {
+                "name": "safari",
+                "version": "18.0",
+                "os": ""
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari180"
+        },
+        {
+            "name": "safari180_ios",
+            "browser": {
+                "name": "safari",
+                "version": "18.0",
+                "os": "ios",
+                "device": "iphone"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari180_ios"
+        },
+        {
+            "name": "safari184",
+            "browser": {
+                "name": "safari",
+                "version": "18.4",
+                "os": ""
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari184"
+        },
+        {
+            "name": "safari184_ios",
+            "browser": {
+                "name": "safari",
+                "version": "18.4",
+                "os": "ios",
+                "device": "iphone"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari184_ios"
+        },
+        {
+            "name": "safari260",
+            "browser": {
+                "name": "safari",
+                "version": "26.0",
+                "os": ""
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari260"
+        },
+        {
+            "name": "safari260_ios",
+            "browser": {
+                "name": "safari",
+                "version": "26.0",
+                "os": "ios",
+                "device": "iphone"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari260_ios"
+        },
+        {
+            "name": "tor145",
+            "browser": {
+                "name": "tor",
+                "version": "145",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_tor145"
         }
     ]
 }
