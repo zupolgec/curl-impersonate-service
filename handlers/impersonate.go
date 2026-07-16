@@ -36,7 +36,7 @@ func (h *ImpersonateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		models.WriteJSONError(w, http.StatusBadRequest, "validation", "failed to read request body")
 		return
 	}
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 
 	var req models.ImpersonateRequest
 	if err := json.Unmarshal(bodyBytes, &req); err != nil {

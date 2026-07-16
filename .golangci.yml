@@ -1,0 +1,9 @@
+version: "2"
+
+run:
+  # The CGO executor is behind a build tag and requires libcurl-impersonate,
+  # which isn't available in the lint environment (CGO_ENABLED=0).
+  build-tags: []
+
+linters:
+  default: standard

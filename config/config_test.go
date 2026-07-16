@@ -16,7 +16,7 @@ func TestLoad_MissingToken(t *testing.T) {
 
 func TestLoad_WithToken(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("TOKEN", "test-token")
+	t.Setenv("TOKEN", "test-token")
 
 	cfg, err := Load()
 	if err != nil {
@@ -43,10 +43,10 @@ func TestLoad_WithToken(t *testing.T) {
 
 func TestLoad_CustomValues(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("TOKEN", "test-token")
-	os.Setenv("PORT", "9090")
-	os.Setenv("LOG_LEVEL", "debug")
-	os.Setenv("MAX_TIMEOUT", "60")
+	t.Setenv("TOKEN", "test-token")
+	t.Setenv("PORT", "9090")
+	t.Setenv("LOG_LEVEL", "debug")
+	t.Setenv("MAX_TIMEOUT", "60")
 
 	cfg, err := Load()
 	if err != nil {
