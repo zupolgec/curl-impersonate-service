@@ -7,8 +7,8 @@ La documentazione di progetto vive in `/docs`:
 - `docs/PLAN.md` — piano di lavoro e stato delle fasi
 - `docs/ARCHITECTURE.md` — decisioni architetturali
 
-`/docs` **non** viene committato con il resto del progetto senza chiedere prima
-a mt (preferenza non ancora confermata: chiedere ad ogni commit).
+`/docs` **resta solo in locale** per questo progetto (preferenza confermata da
+mt il 2026-07-16). È in `.gitignore` e non va mai committato.
 
 ## Convenzioni
 - Commit diretti su `main` (niente PR per questo progetto), con tag + release.

@@ -39,3 +39,6 @@ data/
 *.db
 *.db-wal
 *.db-shm
+
+# Project docs kept local only (per project preference)
+docs/
