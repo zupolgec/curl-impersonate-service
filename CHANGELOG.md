@@ -7,9 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-16
+
 ### Added
-- Multi-architecture Docker images (AMD64 and ARM64)
-- Support for Apple Silicon Macs, AWS Graviton, and other ARM64 platforms
+- SSRF protection: blocks loopback, private, link-local and cloud-metadata
+  destinations and restricts schemes to http/https (including across redirects).
+  Configurable via `SSRF_ALLOW_PRIVATE`, `SSRF_DENY_HOSTS`, `SSRF_ALLOW_HOSTS`.
+- SQLite datastore (`DATA_DIR`) for API tokens, settings and usage logs.
+- Admin UI at `/admin/` (enabled with `ADMIN_TOKEN`, HTTP Basic auth): manage
+  API tokens, edit CORS origins at runtime, browse usage logs and metrics.
+- Multiple API tokens managed from the admin UI; `TOKEN` env is seeded as a
+  legacy token for backward compatibility.
+- Usage logging with automatic retention (`LOG_RETENTION_HOURS`, default 72h).
+- Configurable CORS origins (`CORS_ALLOWED_ORIGINS`), editable from the admin UI.
+- `SECURITY.md`, Dependabot config and a Security workflow (govulncheck + Trivy).
+
+### Changed
+- Enforced `MAX_RESPONSE_BODY_SIZE` (previously declared but unused).
+- Constant-time token comparison for authentication.
+- Bumped Go to 1.26 and updated GitHub Actions and lint configuration.
+
+### Notes
+- The datastore lives in a `/data` volume — persist it across deployments.
+- Multi-architecture Docker images (AMD64 and ARM64) continue to be published.
 
 ## [1.0.0] - 2025-12-23
 
@@ -59,4 +79,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines
 - MIT License
 
+[1.1.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.1.0
 [1.0.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.0.0

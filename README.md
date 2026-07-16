@@ -2,9 +2,12 @@
 
 A Docker-based REST API service that wraps [curl-impersonate](https://github.com/lwthiker/curl-impersonate) to provide browser impersonation as a service. Make HTTP requests that appear to come from real browsers (Chrome, Firefox, Edge, Safari) to bypass TLS and HTTP/2 fingerprinting.
 
+[![Test](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/test.yml/badge.svg)](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/test.yml)
+[![Docker Build](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/docker.yml/badge.svg)](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/docker.yml)
+[![Security](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/security.yml/badge.svg)](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://go.dev/)
-[![Docker](https://img.shields.io/badge/Docker-Available-2496ED?logo=docker)](https://ghcr.io/zupolgec/curl-impersonate-service)
+[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go)](https://go.dev/)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?logo=docker)](https://ghcr.io/zupolgec/curl-impersonate-service)
 
 ## Features
 
