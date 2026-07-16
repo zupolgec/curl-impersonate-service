@@ -51,12 +51,15 @@ docker run -d \
 
 ### Coolify
 
-Deploy by pulling the published GHCR image — no build needed:
+Deploy by pulling the published GHCR image — no build, no manual secrets:
 
-1. In Coolify, create a **Docker Compose** resource using
+1. In Coolify, create a **Docker Compose** resource pointing at this repo and
    [docker-compose.coolify.yml](docker-compose.coolify.yml).
-2. Set `ADMIN_TOKEN` (and optionally `TOKEN`) as secrets in the Coolify UI.
-3. Coolify provisions the domain, TLS and reverse proxy, routing to port `8080`.
+2. Deploy. The compose uses Coolify's magic variables to **auto-generate** the
+   admin token and your first API token, and to provision the domain, TLS and
+   routing to port `8080`.
+3. Open the service's **Environment Variables** tab in Coolify to reveal the
+   generated `ADMIN_TOKEN` (admin UI password) and `TOKEN` (first API token).
 
 The `impersonate-data` volume mounted at `/data` persists tokens, CORS settings
 and usage logs across redeploys — keep it. To update, push to `main` (the Docker
