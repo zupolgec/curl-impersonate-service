@@ -16,6 +16,9 @@
 services:
   impersonate-service:
     image: ghcr.io/zupolgec/curl-impersonate-service:latest
+    # Always pull the newest :latest on (re)deploy, otherwise a stale locally
+    # cached image would keep running.
+    pull_policy: always
     restart: unless-stopped
     environment:
       # Coolify generates the public domain and routes it to port 8080.
