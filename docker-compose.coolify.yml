@@ -1,0 +1,35 @@
+# Coolify deployment — pulls the pre-built image from GHCR.
+#
+# In Coolify: create a new "Docker Compose" resource pointing at this repo (or
+# paste this file), then set the environment variables below in the Coolify UI.
+# Coolify provisions the domain, TLS and reverse proxy automatically; it routes
+# to the container's exposed port (8080).
+#
+# Mark ADMIN_TOKEN and TOKEN as secrets in Coolify.
+
+services:
+  impersonate-service:
+    image: ghcr.io/zupolgec/curl-impersonate-service:latest
+    restart: unless-stopped
+    environment:
+      # At least one of TOKEN / ADMIN_TOKEN is required.
+      - TOKEN=${TOKEN}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_RETENTION_HOURS=${LOG_RETENTION_HOURS:-72}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
+      - DATA_DIR=/data
+    volumes:
+      # Persist the SQLite datastore (tokens, settings, usage logs).
+      - impersonate-data:/data
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  impersonate-data:

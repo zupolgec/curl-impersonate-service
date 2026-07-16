@@ -5,8 +5,12 @@ services:
       - "8080:8080"
     environment:
       - TOKEN=test-token-123
+      - ADMIN_TOKEN=admin-test-123
       - LOG_LEVEL=info
       - PORT=8080
+      - DATA_DIR=/data
+    volumes:
+      - impersonate-data:/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
@@ -14,3 +18,6 @@ services:
       timeout: 3s
       retries: 3
       start_period: 10s
+
+volumes:
+  impersonate-data:

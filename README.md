@@ -41,8 +41,23 @@ curl http://localhost:8080/health
 docker run -d \
   -p 8080:8080 \
   -e TOKEN=your-secret-token \
+  -e ADMIN_TOKEN=your-admin-token \
+  -v impersonate-data:/data \
   ghcr.io/zupolgec/curl-impersonate-service:latest
 ```
+
+### Coolify
+
+Deploy by pulling the published GHCR image — no build needed:
+
+1. In Coolify, create a **Docker Compose** resource using
+   [docker-compose.coolify.yml](docker-compose.coolify.yml).
+2. Set `ADMIN_TOKEN` (and optionally `TOKEN`) as secrets in the Coolify UI.
+3. Coolify provisions the domain, TLS and reverse proxy, routing to port `8080`.
+
+The `impersonate-data` volume mounted at `/data` persists tokens, CORS settings
+and usage logs across redeploys — keep it. To update, push to `main` (the Docker
+workflow republishes `:latest`) and trigger a redeploy in Coolify.
 
 ## API Documentation
 
