@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-07-16
+
+### Fixed
+- Bumped Go to 1.26.5 to pick up the `crypto/tls` security fix (GO-2026-5856).
+- CI hardening: valid Docker image tags on tag pushes, CGO-free release binaries,
+  pinned `trivy-action`, and hermetic integration tests (local go-httpbin sidecar).
+
 ## [1.1.0] - 2026-07-16
 
 ### Added
@@ -79,5 +86,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines
 - MIT License
 
+[1.1.1]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.1.1
 [1.1.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.1.0
 [1.0.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.0.0
