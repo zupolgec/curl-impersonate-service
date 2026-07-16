@@ -15,6 +15,11 @@ type Guard struct {
 	// AllowPrivate disables the private/loopback/link-local IP checks. Intended
 	// for deployments that intentionally proxy to internal hosts.
 	AllowPrivate bool
+	// AllowHTTP permits plain http:// targets. When false, only https is allowed.
+	AllowHTTP bool
+	// AllowIPLiterals permits URLs whose host is a raw IP address. When false,
+	// only hostnames are accepted (which are resolved and validated).
+	AllowIPLiterals bool
 	// DenyHosts is a list of exact hostnames that are always rejected.
 	DenyHosts map[string]struct{}
 	// AllowHosts, when non-empty, restricts requests to these exact hostnames
@@ -24,8 +29,17 @@ type Guard struct {
 	resolver func(host string) ([]net.IP, error)
 }
 
+// Config holds the tunable knobs for a Guard.
+type Config struct {
+	AllowPrivate    bool
+	AllowHTTP       bool
+	AllowIPLiterals bool
+	DenyHosts       []string
+	AllowHosts      []string
+}
+
 // NewGuard builds a Guard from config values.
-func NewGuard(allowPrivate bool, denyHosts, allowHosts []string) *Guard {
+func NewGuard(cfg Config) *Guard {
 	toSet := func(items []string) map[string]struct{} {
 		m := make(map[string]struct{}, len(items))
 		for _, it := range items {
@@ -37,9 +51,11 @@ func NewGuard(allowPrivate bool, denyHosts, allowHosts []string) *Guard {
 		return m
 	}
 	return &Guard{
-		AllowPrivate: allowPrivate,
-		DenyHosts:    toSet(denyHosts),
-		AllowHosts:   toSet(allowHosts),
+		AllowPrivate:    cfg.AllowPrivate,
+		AllowHTTP:       cfg.AllowHTTP,
+		AllowIPLiterals: cfg.AllowIPLiterals,
+		DenyHosts:       toSet(cfg.DenyHosts),
+		AllowHosts:      toSet(cfg.AllowHosts),
 		resolver: func(host string) ([]net.IP, error) {
 			return net.LookupIP(host)
 		},
@@ -59,6 +75,9 @@ func (g *Guard) ValidateURL(rawURL string) error {
 	if scheme != "http" && scheme != "https" {
 		return fmt.Errorf("scheme not allowed: only http and https are permitted")
 	}
+	if scheme == "http" && !g.AllowHTTP {
+		return fmt.Errorf("http scheme not allowed: use https")
+	}
 
 	host := strings.ToLower(u.Hostname())
 	if host == "" {
@@ -74,8 +93,11 @@ func (g *Guard) ValidateURL(rawURL string) error {
 		return fmt.Errorf("host is denied: %s", host)
 	}
 
-	// If the host is a literal IP, validate it directly.
+	// If the host is a literal IP, optionally reject it, then validate it.
 	if ip := net.ParseIP(host); ip != nil {
+		if !g.AllowIPLiterals {
+			return fmt.Errorf("direct IP addresses are not allowed: use a hostname")
+		}
 		return g.checkIP(ip, host)
 	}
 

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-16
+
+### Added
+- Public API documentation page served at `/` (toggle with `API_DOCS_ENABLED`,
+  default enabled). Lists endpoints, request fields and available browsers.
+
+### Changed (stricter SSRF defaults)
+- Only `https://` targets are allowed by default; enable `http://` with
+  `SSRF_ALLOW_HTTP=true`.
+- Targets addressed by a raw IP are rejected by default; allow them with
+  `SSRF_ALLOW_IP=true`.
+
 ## [1.2.0] - 2026-07-16
 
 ### Changed
@@ -102,6 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines
 - MIT License
 
+[1.3.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.3.0
 [1.2.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.2.0
 [1.1.1]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.1.1
 [1.1.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.1.0

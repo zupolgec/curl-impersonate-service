@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const Version = "1.2.0"
+const Version = "1.3.0"
 
 type Config struct {
 	Token               string
@@ -21,6 +21,8 @@ type Config struct {
 
 	// SSRF protection
 	SSRFAllowPrivate bool
+	SSRFAllowHTTP    bool
+	SSRFAllowIP      bool
 	SSRFDenyHosts    []string
 	SSRFAllowHosts   []string
 
@@ -32,6 +34,9 @@ type Config struct {
 	AdminToken        string
 	DataDir           string
 	LogRetentionHours int
+
+	// APIDocsEnabled serves the public API docs page at "/".
+	APIDocsEnabled bool
 }
 
 func Load() (*Config, error) {
@@ -52,6 +57,8 @@ func Load() (*Config, error) {
 		BrowsersJSONPath:    getEnvOrDefault("BROWSERS_JSON_PATH", "/etc/impersonate/browsers.json"),
 
 		SSRFAllowPrivate: getEnvBool("SSRF_ALLOW_PRIVATE", false),
+		SSRFAllowHTTP:    getEnvBool("SSRF_ALLOW_HTTP", false),
+		SSRFAllowIP:      getEnvBool("SSRF_ALLOW_IP", false),
 		SSRFDenyHosts:    getEnvList("SSRF_DENY_HOSTS"),
 		SSRFAllowHosts:   getEnvList("SSRF_ALLOW_HOSTS"),
 
@@ -60,6 +67,8 @@ func Load() (*Config, error) {
 		AdminToken:        adminToken,
 		DataDir:           getEnvOrDefault("DATA_DIR", "/data"),
 		LogRetentionHours: getEnvIntOrDefault("LOG_RETENTION_HOURS", 72),
+
+		APIDocsEnabled: getEnvBool("API_DOCS_ENABLED", true),
 	}
 
 	return cfg, nil

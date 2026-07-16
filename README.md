@@ -74,6 +74,11 @@ Set your token via the `TOKEN` environment variable.
 
 ### Endpoints
 
+#### `GET /`
+
+Public API documentation page (no authentication required). Disable with
+`API_DOCS_ENABLED=false`.
+
 #### `GET /health`
 
 Health check endpoint (no authentication required).
@@ -315,11 +320,14 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 | `DEFAULT_TIMEOUT` | No | `30` | Default timeout in seconds |
 | `CORS_ALLOWED_ORIGINS` | No | `*` | Comma-separated list of allowed CORS origins (initial value; editable in the admin UI) |
 | `SSRF_ALLOW_PRIVATE` | No | `false` | Allow requests to private/loopback/link-local addresses |
+| `SSRF_ALLOW_HTTP` | No | `false` | Allow plain `http://` targets (default: https only) |
+| `SSRF_ALLOW_IP` | No | `false` | Allow targets addressed by raw IP (default: hostnames only) |
 | `SSRF_DENY_HOSTS` | No | - | Comma-separated hostnames to always block |
 | `SSRF_ALLOW_HOSTS` | No | - | Comma-separated allowlist; if set, only these hosts are permitted |
 | `ADMIN_TOKEN` | No | - | Enables the admin UI at `/admin/` (HTTP Basic auth, password = this token) |
 | `DATA_DIR` | No | `/data` | Directory for the SQLite datastore (mount a volume here) |
 | `LOG_RETENTION_HOURS` | No | `72` | How long usage logs are kept before automatic purge |
+| `API_DOCS_ENABLED` | No | `true` | Serve the public API docs page at `/` |
 
 > **Note**: `TOKEN` is now optional. If set, it is seeded as an API token for
 > backward compatibility. Additional API tokens are managed from the admin UI
@@ -341,12 +349,15 @@ SQLite file under `DATA_DIR` — mount a persistent volume there in production.
 
 ### SSRF Protection
 
-By default the service refuses to proxy requests to internal destinations:
-non-`http`/`https` schemes, loopback, private (RFC1918), link-local, and cloud
-metadata addresses (e.g. `169.254.169.254`) are blocked, including across
-redirects. Hostnames are resolved and every resulting IP is checked. Set
-`SSRF_ALLOW_PRIVATE=true` only for deployments that intentionally target
-internal hosts.
+By default the service is strict about what it will proxy:
+
+- Only `https://` is allowed (set `SSRF_ALLOW_HTTP=true` to also allow `http://`).
+- Only hostnames are accepted; raw IP targets are rejected (set
+  `SSRF_ALLOW_IP=true` to allow them).
+- Loopback, private (RFC1918), link-local and cloud metadata addresses (e.g.
+  `169.254.169.254`) are blocked, including across redirects. Hostnames are
+  resolved and every resulting IP is checked. Set `SSRF_ALLOW_PRIVATE=true` only
+  for deployments that intentionally target internal hosts.
 
 ### Docker Compose Example
 

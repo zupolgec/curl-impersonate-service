@@ -73,8 +73,14 @@ func main() {
 	// Setup HTTP router
 	mux := http.NewServeMux()
 
-	// Public endpoint (no auth)
+	// Public endpoints (no auth)
 	mux.HandleFunc("/health", handlers.HealthHandler)
+
+	// Public API docs at "/" (exact match only), toggleable.
+	if cfg.APIDocsEnabled {
+		mux.Handle("GET /{$}", handlers.NewDocsHandler(cfg.AdminToken != ""))
+		log.Printf("API docs enabled at /")
+	}
 
 	// Protected API endpoints, authenticated against datastore tokens.
 	authMw := middleware.AuthMiddleware(st.ValidateToken)

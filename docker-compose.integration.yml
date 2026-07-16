@@ -10,8 +10,9 @@ services:
       - LOG_LEVEL=info
       - PORT=8080
       - DATA_DIR=/data
-      # The httpbin sidecar has a private (Docker network) IP, so allow it.
+      # The httpbin sidecar has a private (Docker network) IP and speaks http.
       - SSRF_ALLOW_PRIVATE=true
+      - SSRF_ALLOW_HTTP=true
     depends_on:
       - httpbin
     healthcheck:

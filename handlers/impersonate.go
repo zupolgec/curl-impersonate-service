@@ -27,7 +27,13 @@ func NewImpersonateHandler(cfg *config.Config, collector *metrics.Collector, st 
 	return &ImpersonateHandler{
 		cfg:       cfg,
 		collector: collector,
-		guard:     security.NewGuard(cfg.SSRFAllowPrivate, cfg.SSRFDenyHosts, cfg.SSRFAllowHosts),
+		guard: security.NewGuard(security.Config{
+			AllowPrivate:    cfg.SSRFAllowPrivate,
+			AllowHTTP:       cfg.SSRFAllowHTTP,
+			AllowIPLiterals: cfg.SSRFAllowIP,
+			DenyHosts:       cfg.SSRFDenyHosts,
+			AllowHosts:      cfg.SSRFAllowHosts,
+		}),
 		store:     st,
 	}
 }
