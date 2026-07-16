@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 const Version = "1.0.0"
@@ -17,6 +18,14 @@ type Config struct {
 	MaxTimeout          int
 	DefaultTimeout      int
 	BrowsersJSONPath    string
+
+	// SSRF protection
+	SSRFAllowPrivate bool
+	SSRFDenyHosts    []string
+	SSRFAllowHosts   []string
+
+	// CORS: allowed origins, "*" for any.
+	CORSAllowedOrigins []string
 }
 
 func Load() (*Config, error) {
@@ -34,9 +43,47 @@ func Load() (*Config, error) {
 		MaxTimeout:          getEnvIntOrDefault("MAX_TIMEOUT", 120),
 		DefaultTimeout:      getEnvIntOrDefault("DEFAULT_TIMEOUT", 30),
 		BrowsersJSONPath:    getEnvOrDefault("BROWSERS_JSON_PATH", "/etc/impersonate/browsers.json"),
+
+		SSRFAllowPrivate: getEnvBool("SSRF_ALLOW_PRIVATE", false),
+		SSRFDenyHosts:    getEnvList("SSRF_DENY_HOSTS"),
+		SSRFAllowHosts:   getEnvList("SSRF_ALLOW_HOSTS"),
+
+		CORSAllowedOrigins: corsOrigins(),
 	}
 
 	return cfg, nil
+}
+
+// corsOrigins reads CORS_ALLOWED_ORIGINS, defaulting to "*" (any origin).
+func corsOrigins() []string {
+	if origins := getEnvList("CORS_ALLOWED_ORIGINS"); origins != nil {
+		return origins
+	}
+	return []string{"*"}
+}
+
+func getEnvBool(key string, defaultValue bool) bool {
+	if value := os.Getenv(key); value != "" {
+		if b, err := strconv.ParseBool(value); err == nil {
+			return b
+		}
+	}
+	return defaultValue
+}
+
+// getEnvList parses a comma-separated env var into a trimmed, non-empty slice.
+func getEnvList(key string) []string {
+	value := os.Getenv(key)
+	if value == "" {
+		return nil
+	}
+	var out []string
+	for _, item := range strings.Split(value, ",") {
+		if item = strings.TrimSpace(item); item != "" {
+			out = append(out, item)
+		}
+	}
+	return out
 }
 
 func getEnvOrDefault(key, defaultValue string) string {

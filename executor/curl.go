@@ -8,6 +8,6 @@ import (
 )
 
 // Execute runs curl-impersonate with the given request (non-CGO version uses shell)
-func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig) (*models.ImpersonateResponse, error) {
-	return executeShell(req, browserConfig)
+func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig, maxResponseSize int64) (*models.ImpersonateResponse, error) {
+	return executeShell(req, browserConfig, maxResponseSize)
 }

@@ -1,11 +1,18 @@
 package middleware
 
 import (
+	"crypto/subtle"
 	"net/http"
 	"strings"
 
 	"github.com/zupolgec/curl-impersonate-service/models"
 )
+
+// tokensEqual compares two tokens in constant time to avoid leaking the token
+// through response-timing differences.
+func tokensEqual(a, b string) bool {
+	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
+}
 
 func AuthMiddleware(token string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -13,7 +20,7 @@ func AuthMiddleware(token string) func(http.Handler) http.Handler {
 			// Check query parameter first
 			queryToken := r.URL.Query().Get("token")
 			if queryToken != "" {
-				if queryToken == token {
+				if tokensEqual(queryToken, token) {
 					next.ServeHTTP(w, r)
 					return
 				}
@@ -35,7 +42,7 @@ func AuthMiddleware(token string) func(http.Handler) http.Handler {
 				return
 			}
 
-			if parts[1] != token {
+			if !tokensEqual(parts[1], token) {
 				models.WriteJSONError(w, http.StatusUnauthorized, "auth", "invalid authentication token")
 				return
 			}

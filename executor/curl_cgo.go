@@ -9,13 +9,23 @@ package executor
 #include <string.h>
 #include "curl_wrappers.h"
 
+// Buffer that accumulates response bytes, aborting if a size cap is exceeded.
+struct resp_buffer {
+    char *data;
+    size_t size;
+    size_t maxsize;   // 0 means unlimited
+    int overflow;
+};
+
 // Callback to write response data to a buffer
 size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userdata) {
     size_t realsize = size * nmemb;
-    struct {
-        char *data;
-        size_t size;
-    } *mem = userdata;
+    struct resp_buffer *mem = userdata;
+
+    if (mem->maxsize > 0 && mem->size + realsize > mem->maxsize) {
+        mem->overflow = 1;
+        return 0; // signal an error to abort the transfer
+    }
 
     char *ptr2 = realloc(mem->data, mem->size + realsize + 1);
     if (ptr2 == NULL) return 0;
@@ -41,15 +51,17 @@ import (
 )
 
 type responseBuffer struct {
-	data *C.char
-	size C.size_t
+	data     *C.char
+	size     C.size_t
+	maxsize  C.size_t
+	overflow C.int
 }
 
-func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig) (*models.ImpersonateResponse, error) {
+func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig, maxResponseSize int64) (*models.ImpersonateResponse, error) {
 	// CGO executor only supports Chrome-based browsers (uses libcurl-impersonate-chrome)
 	// Firefox browsers need the Firefox SSL library, so fall back to shell execution
 	if browserConfig.Binary == "curl-impersonate-ff" {
-		return executeShell(req, browserConfig)
+		return executeShell(req, browserConfig, maxResponseSize)
 	}
 
 	// Initialize curl
@@ -118,6 +130,14 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 	// Set Timeout
 	C._curl_easy_setopt_long(curl, C.CURLOPT_TIMEOUT, C.long(req.Timeout))
 
+	// Restrict protocols to http/https, including across redirects, to prevent
+	// SSRF via file://, gopher://, dict:// and similar. Numeric constants:
+	// CURLOPT_PROTOCOLS=181, CURLOPT_REDIR_PROTOCOLS=182,
+	// CURLPROTO_HTTP=1, CURLPROTO_HTTPS=2.
+	const protoMask = C.long(1 | 2)
+	C._curl_easy_setopt_long(curl, C.CURLoption(181), protoMask)
+	C._curl_easy_setopt_long(curl, C.CURLoption(182), protoMask)
+
 	// Disable SSL verification if requested
 	// CURLOPT_SSL_VERIFYPEER = 64, CURLOPT_SSL_VERIFYHOST = 81
 	if req.Insecure {
@@ -128,6 +148,10 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 	// Setup Response Buffers
 	var respBuf responseBuffer
 	var headerBuf responseBuffer
+	if maxResponseSize > 0 {
+		respBuf.maxsize = C.size_t(maxResponseSize)
+		headerBuf.maxsize = C.size_t(maxResponseSize)
+	}
 
 	C._curl_easy_setopt_ptr(curl, C.CURLOPT_WRITEFUNCTION, unsafe.Pointer(C.write_callback))
 	C._curl_easy_setopt_ptr(curl, C.CURLOPT_WRITEDATA, unsafe.Pointer(&respBuf))
@@ -149,6 +173,13 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig)
 	}()
 
 	if res != C.CURLE_OK {
+		if respBuf.overflow != 0 || headerBuf.overflow != 0 {
+			return &models.ImpersonateResponse{
+				Success:   false,
+				Error:     "response exceeds maximum allowed size",
+				ErrorType: "size",
+			}, nil
+		}
 		errStr := C.GoString(C.curl_easy_strerror(res))
 		errorType := "network"
 		if res == C.CURLE_OPERATION_TIMEDOUT {

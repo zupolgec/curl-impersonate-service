@@ -182,7 +182,7 @@ Make an HTTP request impersonating a browser (authentication required).
 }
 ```
 
-Error types: `network`, `dns`, `timeout`, `ssl`
+Error types: `network`, `dns`, `timeout`, `ssl`, `size`
 
 **Validation Error (400 Bad Request):**
 ```json
@@ -292,6 +292,19 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 | `MAX_RESPONSE_BODY_SIZE` | No | `52428800` | Max response body size in bytes (50MB) |
 | `MAX_TIMEOUT` | No | `120` | Maximum timeout in seconds |
 | `DEFAULT_TIMEOUT` | No | `30` | Default timeout in seconds |
+| `CORS_ALLOWED_ORIGINS` | No | `*` | Comma-separated list of allowed CORS origins |
+| `SSRF_ALLOW_PRIVATE` | No | `false` | Allow requests to private/loopback/link-local addresses |
+| `SSRF_DENY_HOSTS` | No | - | Comma-separated hostnames to always block |
+| `SSRF_ALLOW_HOSTS` | No | - | Comma-separated allowlist; if set, only these hosts are permitted |
+
+### SSRF Protection
+
+By default the service refuses to proxy requests to internal destinations:
+non-`http`/`https` schemes, loopback, private (RFC1918), link-local, and cloud
+metadata addresses (e.g. `169.254.169.254`) are blocked, including across
+redirects. Hostnames are resolved and every resulting IP is checked. Set
+`SSRF_ALLOW_PRIVATE=true` only for deployments that intentionally target
+internal hosts.
 
 ### Docker Compose Example
 

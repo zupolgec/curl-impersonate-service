@@ -56,7 +56,8 @@ func main() {
 	mux.Handle("/impersonate", authMw(handlers.NewImpersonateHandler(cfg, collector)))
 
 	// Apply middleware chain: CORS -> Logging -> Routes
-	handler := middleware.CORSMiddleware(middleware.LoggingMiddleware(mux))
+	corsMw := middleware.CORSMiddleware(func() []string { return cfg.CORSAllowedOrigins })
+	handler := corsMw(middleware.LoggingMiddleware(mux))
 
 	// Create HTTP server
 	server := &http.Server{

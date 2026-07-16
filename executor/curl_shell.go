@@ -21,7 +21,7 @@ type CurlTiming struct {
 }
 
 // executeShell runs curl-impersonate via shell wrapper script
-func executeShell(req *models.ImpersonateRequest, browserConfig models.BrowserConfig) (*models.ImpersonateResponse, error) {
+func executeShell(req *models.ImpersonateRequest, browserConfig models.BrowserConfig, maxResponseSize int64) (*models.ImpersonateResponse, error) {
 	// Merge query params
 	finalURL, err := mergeQueryParams(req.URL, req.QueryParams)
 	if err != nil {
@@ -32,7 +32,7 @@ func executeShell(req *models.ImpersonateRequest, browserConfig models.BrowserCo
 	wrapperScript := "/usr/local/bin/" + browserConfig.WrapperScript
 
 	// Build curl command
-	args, err := buildCurlArgs(req, finalURL)
+	args, err := buildCurlArgs(req, finalURL, maxResponseSize)
 	if err != nil {
 		return nil, err
 	}
@@ -49,13 +49,22 @@ func executeShell(req *models.ImpersonateRequest, browserConfig models.BrowserCo
 	return parseSuccessResponse(output, finalURL)
 }
 
-func buildCurlArgs(req *models.ImpersonateRequest, finalURL string) ([]string, error) {
+func buildCurlArgs(req *models.ImpersonateRequest, finalURL string, maxResponseSize int64) ([]string, error) {
 	args := []string{
 		"-i",             // Include response headers
 		"-s",             // Silent mode
 		"-X", req.Method, // HTTP method
 		"--max-time", strconv.Itoa(req.Timeout),
+		// Restrict protocols to http/https on the initial request and across
+		// redirects to prevent SSRF via file://, gopher:// and similar.
+		"--proto", "=http,https",
+		"--proto-redir", "=http,https",
 		"-w", "\n---TIMING---\n{\"time_total\":%{time_total},\"time_namelookup\":%{time_namelookup},\"time_connect\":%{time_connect},\"time_starttransfer\":%{time_starttransfer}}",
+	}
+
+	// Abort the transfer if the target advertises a body larger than the cap.
+	if maxResponseSize > 0 {
+		args = append(args, "--max-filesize", strconv.FormatInt(maxResponseSize, 10))
 	}
 
 	if req.FollowRedirects {

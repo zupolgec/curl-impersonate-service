@@ -10,17 +10,20 @@ import (
 	"github.com/zupolgec/curl-impersonate-service/executor"
 	"github.com/zupolgec/curl-impersonate-service/metrics"
 	"github.com/zupolgec/curl-impersonate-service/models"
+	"github.com/zupolgec/curl-impersonate-service/security"
 )
 
 type ImpersonateHandler struct {
 	cfg       *config.Config
 	collector *metrics.Collector
+	guard     *security.Guard
 }
 
 func NewImpersonateHandler(cfg *config.Config, collector *metrics.Collector) *ImpersonateHandler {
 	return &ImpersonateHandler{
 		cfg:       cfg,
 		collector: collector,
+		guard:     security.NewGuard(cfg.SSRFAllowPrivate, cfg.SSRFDenyHosts, cfg.SSRFAllowHosts),
 	}
 }
 
@@ -47,6 +50,12 @@ func (h *ImpersonateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// SSRF protection: block internal/metadata destinations.
+	if err := h.guard.ValidateURL(req.URL); err != nil {
+		models.WriteJSONError(w, http.StatusBadRequest, "validation", err.Error())
+		return
+	}
+
 	// Resolve browser name
 	browserName := models.ResolveBrowserName(req.Browser)
 
@@ -58,7 +67,7 @@ func (h *ImpersonateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Execute curl-impersonate
-	response, err := executor.Execute(&req, browserConfig)
+	response, err := executor.Execute(&req, browserConfig, h.cfg.MaxResponseBodySize)
 	if err != nil {
 		// Internal service error
 		h.collector.RecordRequest(browserName, false, time.Since(start))
