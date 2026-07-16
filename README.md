@@ -74,10 +74,10 @@ Set your token via the `TOKEN` environment variable.
 
 ### Endpoints
 
-#### `GET /`
+#### `GET /docs`
 
-Public API documentation page (no authentication required). Disable with
-`API_DOCS_ENABLED=false`.
+API documentation page (authentication required — open it with `?token=<token>`
+in a browser). Disable with `API_DOCS_ENABLED=false`.
 
 #### `GET /health`
 
@@ -327,7 +327,7 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 | `ADMIN_TOKEN` | No | - | Enables the admin UI at `/admin/` (HTTP Basic auth, password = this token) |
 | `DATA_DIR` | No | `/data` | Directory for the SQLite datastore (mount a volume here) |
 | `LOG_RETENTION_HOURS` | No | `72` | How long usage logs are kept before automatic purge |
-| `API_DOCS_ENABLED` | No | `true` | Serve the public API docs page at `/` |
+| `API_DOCS_ENABLED` | No | `true` | Serve the API docs page at `/docs` (token-authenticated) |
 
 > **Note**: `TOKEN` is now optional. If set, it is seeded as an API token for
 > backward compatibility. Additional API tokens are managed from the admin UI

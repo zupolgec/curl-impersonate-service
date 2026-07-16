@@ -73,20 +73,20 @@ func main() {
 	// Setup HTTP router
 	mux := http.NewServeMux()
 
-	// Public endpoints (no auth)
+	// Public endpoint (no auth)
 	mux.HandleFunc("/health", handlers.HealthHandler)
-
-	// Public API docs at "/" (exact match only), toggleable.
-	if cfg.APIDocsEnabled {
-		mux.Handle("GET /{$}", handlers.NewDocsHandler(cfg.AdminToken != ""))
-		log.Printf("API docs enabled at /")
-	}
 
 	// Protected API endpoints, authenticated against datastore tokens.
 	authMw := middleware.AuthMiddleware(st.ValidateToken)
 	mux.Handle("/browsers", authMw(http.HandlerFunc(handlers.BrowsersHandler)))
 	mux.Handle("/metrics", authMw(handlers.NewMetricsHandler(collector)))
 	mux.Handle("/impersonate", authMw(handlers.NewImpersonateHandler(cfg, collector, st)))
+
+	// API docs at /docs (token-authenticated), toggleable.
+	if cfg.APIDocsEnabled {
+		mux.Handle("/docs", authMw(handlers.NewDocsHandler(cfg.AdminToken != "")))
+		log.Printf("API docs enabled at /docs")
+	}
 
 	// Admin UI (enabled only when ADMIN_TOKEN is set), protected by Basic auth.
 	if cfg.AdminToken != "" {

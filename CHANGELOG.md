@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-07-16
+
+### Changed
+- Moved the API docs page from `/` to `/docs` and put it behind API-token auth
+  (open it in a browser with `?token=<token>`).
+
 ## [1.3.0] - 2026-07-16
 
 ### Added
@@ -114,6 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines
 - MIT License
 
+[1.3.1]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.3.1
 [1.3.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.3.0
 [1.2.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.2.0
 [1.1.1]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.1.1

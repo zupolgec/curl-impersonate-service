@@ -43,7 +43,7 @@ const docsTemplate = `<!DOCTYPE html>
 <main>
 
 <h2>Authentication</h2>
-<p>All endpoints except <code>/health</code> and this page require an API token, sent as
+<p>All endpoints except <code>/health</code> require an API token, sent as
 either a bearer header or a query parameter:</p>
 <pre><code>Authorization: Bearer &lt;token&gt;
 # or
