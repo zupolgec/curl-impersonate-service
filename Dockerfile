@@ -81,11 +81,14 @@ COPY browsers.json /etc/impersonate/browsers.json
 # Service configuration
 ENV PORT=8080
 ENV BROWSERS_JSON_PATH=/etc/impersonate/browsers.json
+ENV DATA_DIR=/data
 
 EXPOSE 8080
 
-# Create non-root user
-RUN useradd -m -u 1000 -s /bin/bash impersonate
+# Create non-root user and a writable data dir for the SQLite datastore
+RUN useradd -m -u 1000 -s /bin/bash impersonate && \
+    mkdir -p /data && chown 1000:1000 /data
+VOLUME /data
 USER impersonate
 
 # Health check

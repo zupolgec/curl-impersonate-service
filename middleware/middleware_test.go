@@ -14,7 +14,13 @@ func okHandler() http.Handler {
 
 func TestAuthMiddleware(t *testing.T) {
 	const token = "secret-token"
-	h := AuthMiddleware(token)(okHandler())
+	validate := func(t string) (string, bool) {
+		if t == token {
+			return "test", true
+		}
+		return "", false
+	}
+	h := AuthMiddleware(validate)(okHandler())
 
 	cases := []struct {
 		name       string

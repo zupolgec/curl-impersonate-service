@@ -292,10 +292,31 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 | `MAX_RESPONSE_BODY_SIZE` | No | `52428800` | Max response body size in bytes (50MB) |
 | `MAX_TIMEOUT` | No | `120` | Maximum timeout in seconds |
 | `DEFAULT_TIMEOUT` | No | `30` | Default timeout in seconds |
-| `CORS_ALLOWED_ORIGINS` | No | `*` | Comma-separated list of allowed CORS origins |
+| `CORS_ALLOWED_ORIGINS` | No | `*` | Comma-separated list of allowed CORS origins (initial value; editable in the admin UI) |
 | `SSRF_ALLOW_PRIVATE` | No | `false` | Allow requests to private/loopback/link-local addresses |
 | `SSRF_DENY_HOSTS` | No | - | Comma-separated hostnames to always block |
 | `SSRF_ALLOW_HOSTS` | No | - | Comma-separated allowlist; if set, only these hosts are permitted |
+| `ADMIN_TOKEN` | No | - | Enables the admin UI at `/admin/` (HTTP Basic auth, password = this token) |
+| `DATA_DIR` | No | `/data` | Directory for the SQLite datastore (mount a volume here) |
+| `LOG_RETENTION_HOURS` | No | `72` | How long usage logs are kept before automatic purge |
+
+> **Note**: `TOKEN` is now optional. If set, it is seeded as an API token for
+> backward compatibility. Additional API tokens are managed from the admin UI
+> and stored in the datastore. At least one of `TOKEN` or `ADMIN_TOKEN` must be set.
+
+### Admin UI
+
+When `ADMIN_TOKEN` is set, an admin dashboard is served at `/admin/`, protected
+by HTTP Basic auth (any username; the password is the admin token). From there you can:
+
+- **Tokens**: create, disable/enable and delete API tokens
+- **CORS**: edit the allowed origins at runtime (no restart needed)
+- **Logs**: browse recent request usage (time, token, browser, target host, status)
+- **Dashboard**: live metrics and recent activity
+
+Usage logs record only the target host (never the full URL, headers or body) and
+are purged automatically after `LOG_RETENTION_HOURS`. The datastore is a single
+SQLite file under `DATA_DIR` — mount a persistent volume there in production.
 
 ### SSRF Protection
 

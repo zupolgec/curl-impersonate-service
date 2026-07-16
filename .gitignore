@@ -33,3 +33,9 @@ Thumbs.db
 # Build artifacts
 dist/
 build/
+
+# Local datastore
+data/
+*.db
+*.db-wal
+*.db-shm

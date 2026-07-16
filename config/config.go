@@ -24,14 +24,21 @@ type Config struct {
 	SSRFDenyHosts    []string
 	SSRFAllowHosts   []string
 
-	// CORS: allowed origins, "*" for any.
+	// CORS: initial allowed origins, "*" for any. May be overridden at runtime
+	// via the admin UI (persisted in the datastore).
 	CORSAllowedOrigins []string
+
+	// Persistence and admin UI
+	AdminToken        string
+	DataDir           string
+	LogRetentionHours int
 }
 
 func Load() (*Config, error) {
 	token := os.Getenv("TOKEN")
-	if token == "" {
-		return nil, fmt.Errorf("TOKEN environment variable is required")
+	adminToken := os.Getenv("ADMIN_TOKEN")
+	if token == "" && adminToken == "" {
+		return nil, fmt.Errorf("set TOKEN and/or ADMIN_TOKEN: at least one is required")
 	}
 
 	cfg := &Config{
@@ -49,6 +56,10 @@ func Load() (*Config, error) {
 		SSRFAllowHosts:   getEnvList("SSRF_ALLOW_HOSTS"),
 
 		CORSAllowedOrigins: corsOrigins(),
+
+		AdminToken:        adminToken,
+		DataDir:           getEnvOrDefault("DATA_DIR", "/data"),
+		LogRetentionHours: getEnvIntOrDefault("LOG_RETENTION_HOURS", 72),
 	}
 
 	return cfg, nil
