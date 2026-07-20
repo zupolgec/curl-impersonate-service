@@ -92,6 +92,12 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig,
 		return nil, fmt.Errorf("failed to impersonate %s: %d", browserConfig.Name, int(impersonateRes))
 	}
 
+	// Advertise every compression format supported by this libcurl build and
+	// transparently decode the response, matching curl's --compressed option.
+	cAcceptEncoding := C.CString("")
+	defer C.free(unsafe.Pointer(cAcceptEncoding))
+	C._curl_easy_setopt_ptr(curl, C.CURLOPT_ACCEPT_ENCODING, unsafe.Pointer(cAcceptEncoding))
+
 	// Set Headers
 	var headerList *C.struct_curl_slist
 	for k, v := range req.Headers {
@@ -242,21 +248,11 @@ func Execute(req *models.ImpersonateRequest, browserConfig models.BrowserConfig,
 	}
 
 	// Body handling
+	bodyBytes = nil
 	if respBuf.data != nil {
-		bodyBytes := C.GoBytes(unsafe.Pointer(respBuf.data), C.int(respBuf.size))
-		contentType := ""
-		if ct, ok := headers["Content-Type"]; ok && len(ct) > 0 {
-			contentType = ct[0]
-		}
-
-		if isTextContent(contentType) {
-			response.Body = string(bodyBytes)
-			response.BodyBase64 = false
-		} else {
-			response.Body = base64.StdEncoding.EncodeToString(bodyBytes)
-			response.BodyBase64 = true
-		}
+		bodyBytes = C.GoBytes(unsafe.Pointer(respBuf.data), C.int(respBuf.size))
 	}
+	setResponseBody(response, bodyBytes)
 
 	return response, nil
 }

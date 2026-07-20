@@ -53,6 +53,7 @@ func buildCurlArgs(req *models.ImpersonateRequest, finalURL string, maxResponseS
 	args := []string{
 		"-i",             // Include response headers
 		"-s",             // Silent mode
+		"--compressed",   // Request and automatically decode supported encodings
 		"-X", req.Method, // HTTP method
 		"--max-time", strconv.Itoa(req.Timeout),
 		// Restrict protocols to http/https on the initial request and across
@@ -165,19 +166,7 @@ func parseSuccessResponse(output []byte, requestedURL string) (*models.Impersona
 		},
 	}
 
-	// Determine if response is text or binary
-	contentType := ""
-	if ct, ok := headers["Content-Type"]; ok && len(ct) > 0 {
-		contentType = ct[0]
-	}
-
-	if isTextContent(contentType) {
-		response.Body = string(bodyBytes)
-		response.BodyBase64 = false
-	} else {
-		response.Body = base64.StdEncoding.EncodeToString(bodyBytes)
-		response.BodyBase64 = true
-	}
+	setResponseBody(response, bodyBytes)
 
 	return response, nil
 }

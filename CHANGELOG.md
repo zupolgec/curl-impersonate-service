@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-07-20
+
+### Fixed
+- Automatically decode compressed upstream responses before serializing the
+  JSON envelope, and remove stale `Content-Encoding`/`Content-Length` headers.
+- Base64-encode textual responses containing invalid UTF-8 instead of allowing
+  JSON serialization to replace and irreversibly corrupt their bytes.
+
 ## [1.3.1] - 2026-07-16
 
 ### Changed
@@ -120,6 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines
 - MIT License
 
+[1.3.2]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.3.2
 [1.3.1]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.3.1
 [1.3.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.3.0
 [1.2.0]: https://github.com/zupolgec/curl-impersonate-service/releases/tag/v1.2.0
