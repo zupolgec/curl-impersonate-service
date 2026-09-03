@@ -17,7 +17,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH="aarch64"; else ARCH="x86_64"; fi 
     wget -q $URL_LIB -O lib.tar.gz && mkdir -p lib && tar -xzf lib.tar.gz -C lib && rm lib.tar.gz
 
 # Stage 2: Build Go binary (Use Debian for GLIBC compatibility)
-FROM golang:1.26.5-bookworm AS builder
+FROM golang:1.27.1-bookworm AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
