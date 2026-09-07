@@ -27,13 +27,13 @@ type BrowsersData struct {
 var (
 	browsersCache  map[string]BrowserConfig
 	browserAliases = map[string]string{
-		"chrome-latest":  "chrome136",
-		"firefox-latest": "firefox135",
+		"chrome-latest":  "chrome150",
+		"firefox-latest": "firefox147",
 		"edge-latest":    "edge101",
-		"safari-latest":  "safari260",
+		"safari-latest":  "safari2601",
 		"tor-latest":     "tor145",
 	}
-	defaultBrowser = "chrome136"
+	defaultBrowser = "chrome150"
 )
 
 // LoadBrowsers loads and caches browsers.json

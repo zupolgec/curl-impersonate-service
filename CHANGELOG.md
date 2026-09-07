@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-07
+
+### Added
+- New impersonation targets from curl-impersonate v2.2.2: `chrome142`, `chrome145`,
+  `chrome146`, `chrome150`, `firefox144`, `firefox147`, `safari2601`.
+
+### Changed
+- Bumped curl-impersonate to v2.2.2 (curl 8.21.0, BoringSSL from Chrome 150).
+- Default browser is now `chrome150`; `firefox-latest`→`firefox147`,
+  `safari-latest`→`safari2601`.
+- Go is no longer pinned to a patch release: `go.mod` is the single source of
+  truth (`go 1.27`), CI resolves the latest 1.27.x and the image builds on
+  `golang:1.27-bookworm`. Fixes the weekly govulncheck failures caused by
+  stdlib advisories fixed in 1.26.6+.
+- Updated GitHub Actions (checkout v7, setup-go v7, cache v6, codecov v7,
+  golangci-lint-action v9, docker actions) and Go module dependencies.
+- Pinned the downloader stage to `alpine:3.22`.
+
 ## [1.3.2] - 2026-07-20
 
 ### Fixed

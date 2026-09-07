@@ -1,5 +1,5 @@
 # Stage 1: Download curl-impersonate binaries and libraries
-FROM alpine:latest AS downloader
+FROM alpine:3.22 AS downloader
 
 RUN apk add --no-cache wget tar ca-certificates
 
@@ -7,7 +7,7 @@ WORKDIR /tmp
 
 # Download pre-compiled binaries and libraries for the target architecture.
 # Uses the actively-maintained lexiforest fork (lwthiker's is archived).
-ARG CURL_IMPERSONATE_VERSION=v1.2.2
+ARG CURL_IMPERSONATE_VERSION=v2.2.2
 ARG TARGETARCH
 RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH="aarch64"; else ARCH="x86_64"; fi && \
     BASE="https://github.com/lexiforest/curl-impersonate/releases/download/${CURL_IMPERSONATE_VERSION}" && \
@@ -17,7 +17,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH="aarch64"; else ARCH="x86_64"; fi 
     wget -q $URL_LIB -O lib.tar.gz && mkdir -p lib && tar -xzf lib.tar.gz -C lib && rm lib.tar.gz
 
 # Stage 2: Build Go binary (Use Debian for GLIBC compatibility)
-FROM golang:1.26.5-bookworm AS builder
+FROM golang:1.27-bookworm AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \

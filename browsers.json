@@ -142,6 +142,46 @@
             "wrapper_script": "curl_chrome136"
         },
         {
+            "name": "chrome142",
+            "browser": {
+                "name": "chrome",
+                "version": "142.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome142"
+        },
+        {
+            "name": "chrome145",
+            "browser": {
+                "name": "chrome",
+                "version": "145.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome145"
+        },
+        {
+            "name": "chrome146",
+            "browser": {
+                "name": "chrome",
+                "version": "146.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome146"
+        },
+        {
+            "name": "chrome150",
+            "browser": {
+                "name": "chrome",
+                "version": "150.0.0.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome150"
+        },
+        {
             "name": "chrome99",
             "browser": {
                 "name": "chrome",
@@ -201,6 +241,26 @@
             },
             "binary": "curl-impersonate",
             "wrapper_script": "curl_firefox135"
+        },
+        {
+            "name": "firefox144",
+            "browser": {
+                "name": "firefox",
+                "version": "144.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_firefox144"
+        },
+        {
+            "name": "firefox147",
+            "browser": {
+                "name": "firefox",
+                "version": "147.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_firefox147"
         },
         {
             "name": "safari153",
@@ -305,6 +365,16 @@
             },
             "binary": "curl-impersonate",
             "wrapper_script": "curl_safari260_ios"
+        },
+        {
+            "name": "safari2601",
+            "browser": {
+                "name": "safari",
+                "version": "26.0.1",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari2601"
         },
         {
             "name": "tor145",

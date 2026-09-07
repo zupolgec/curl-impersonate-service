@@ -6,7 +6,7 @@ A Docker-based REST API service that wraps [curl-impersonate](https://github.com
 [![Docker Build](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/docker.yml/badge.svg)](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/docker.yml)
 [![Security](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/security.yml/badge.svg)](https://github.com/zupolgec/curl-impersonate-service/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.27+-00ADD8?logo=go)](https://go.dev/)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?logo=docker)](https://ghcr.io/zupolgec/curl-impersonate-service)
 
 ## Features
@@ -232,13 +232,13 @@ Error types: `network`, `dns`, `timeout`, `ssl`, `size`
 
 | Browser | Versions | Alias |
 |---------|----------|-------|
-| Chrome | 99, 100, 101, 104, 107, 110, 116, 119, 120, 123, 124, 131, 133a, 136 (+ android) | `chrome-latest` → `chrome136` |
-| Firefox | 133, 135 | `firefox-latest` → `firefox135` |
+| Chrome | 99, 100, 101, 104, 107, 110, 116, 119, 120, 123, 124, 131, 133a, 136, 142, 145, 146, 150 (+ android) | `chrome-latest` → `chrome150` |
+| Firefox | 133, 135, 144, 147 | `firefox-latest` → `firefox147` |
 | Edge | 99, 101 | `edge-latest` → `edge101` |
-| Safari | 15.3, 15.5, 17.0, 18.0, 18.4, 26.0 (+ iOS variants) | `safari-latest` → `safari260` |
+| Safari | 15.3, 15.5, 17.0, 18.0, 18.4, 26.0, 26.0.1 (+ iOS variants) | `safari-latest` → `safari2601` |
 | Tor | 14.5 | `tor-latest` → `tor145` |
 
-Default browser: `chrome136` (chrome-latest)
+Default browser: `chrome150` (chrome-latest)
 
 Powered by the actively-maintained [lexiforest/curl-impersonate](https://github.com/lexiforest/curl-impersonate) fork.
 
