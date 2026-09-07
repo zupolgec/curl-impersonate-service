@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-09-07
+
+### Fixed
+- Reported version (`/health`, startup log) was still 1.3.2 in the 1.4.0 release.
+
 ## [1.4.0] - 2026-09-07
 
 ### Added

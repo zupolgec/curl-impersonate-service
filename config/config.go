@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const Version = "1.3.2"
+const Version = "1.4.1"
 
 type Config struct {
 	Token               string
