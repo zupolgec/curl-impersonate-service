@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- The version now lives only in the git tag: CI injects it into binaries and the
+  Docker image via `-ldflags -X`; local builds report `dev`. Added
+  `scripts/release.sh` to close the changelog, tag and push in one step.
+
 ## [1.4.1] - 2026-09-07
 
 ### Fixed

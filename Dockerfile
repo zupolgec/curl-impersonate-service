@@ -39,12 +39,13 @@ COPY . .
 # Copy libraries from downloader for linking
 COPY --from=downloader /tmp/lib/* /usr/local/lib/
 
-# Build the binary for the target platform
+# Build the binary for the target platform. VERSION is injected by CI from the git tag.
 ARG TARGETARCH
+ARG VERSION=dev
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETARCH} \
     CGO_LDFLAGS="-L/usr/local/lib -lcurl-impersonate" \
     go build \
-    -ldflags="-w -s" \
+    -ldflags="-w -s -X github.com/zupolgec/curl-impersonate-service/config.Version=${VERSION}" \
     -o impersonate-service \
     .
 

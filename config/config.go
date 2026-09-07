@@ -7,7 +7,9 @@ import (
 	"strings"
 )
 
-const Version = "1.4.1"
+// Version is set at build time via -ldflags "-X 'github.com/zupolgec/curl-impersonate-service/config.Version=1.2.3'".
+// Local builds without it report "dev".
+var Version = "dev"
 
 type Config struct {
 	Token               string

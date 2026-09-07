@@ -32,10 +32,11 @@ jobs:
       env:
         CGO_ENABLED: 0
       run: |
-        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o impersonate-service-linux-amd64 .
-        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o impersonate-service-linux-arm64 .
-        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o impersonate-service-darwin-amd64 .
-        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o impersonate-service-darwin-arm64 .
+        LDFLAGS="-s -w -X github.com/zupolgec/curl-impersonate-service/config.Version=${GITHUB_REF_NAME#v}"
+        GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o impersonate-service-linux-amd64 .
+        GOOS=linux GOARCH=arm64 go build -ldflags="$LDFLAGS" -o impersonate-service-linux-arm64 .
+        GOOS=darwin GOARCH=amd64 go build -ldflags="$LDFLAGS" -o impersonate-service-darwin-amd64 .
+        GOOS=darwin GOARCH=arm64 go build -ldflags="$LDFLAGS" -o impersonate-service-darwin-arm64 .
 
     - name: Generate changelog
       id: changelog
