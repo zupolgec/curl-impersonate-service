@@ -1,5 +1,5 @@
 # Stage 1: Download curl-impersonate binaries and libraries
-FROM alpine:3.22 AS downloader
+FROM alpine:3.24 AS downloader
 
 RUN apk add --no-cache wget tar ca-certificates
 
