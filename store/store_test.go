@@ -109,3 +109,77 @@ func TestLogsAndPurge(t *testing.T) {
 		t.Fatalf("expected 3 purged, got %d", n)
 	}
 }
+
+func TestDailyStatsSurvivePurge(t *testing.T) {
+	s := openTestStore(t)
+	add := func(tok string, ok bool, ms int64) {
+		t.Helper()
+		if err := s.AddLog(LogEntry{TokenName: tok, Browser: "chrome152", Method: "GET", TargetHost: "example.com", Success: ok, DurationMs: ms}); err != nil {
+			t.Fatalf("AddLog: %v", err)
+		}
+	}
+	add("a", true, 100)
+	add("a", false, 300)
+	add("b", true, 200)
+
+	// Purging the logs must not touch the history.
+	if _, err := s.PurgeLogsOlderThan(-time.Second); err != nil {
+		t.Fatal(err)
+	}
+
+	tot, err := s.TotalStats()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tot.Requests != 3 || tot.Success != 2 || tot.Failed != 1 || tot.AvgMs() != 200 {
+		t.Fatalf("totals = %+v", tot)
+	}
+	if tot.Since.IsZero() {
+		t.Fatal("Since should be the first tracked day")
+	}
+
+	days, err := s.DailyStats(30)
+	if err != nil {
+		t.Fatal(err)
+	}
+	today := time.Now().UTC().Format("2006-01-02")
+	if len(days) != 1 || days[0].Day != today || days[0].Requests != 3 {
+		t.Fatalf("days = %+v", days)
+	}
+}
+
+func TestDailyStatsBackfilledFromLogs(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "old.db")
+	s, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Simulate a database from before the history existed: logs only.
+	two := time.Now().Add(-48 * time.Hour).Unix()
+	for _, ts := range []int64{two, two, time.Now().Unix()} {
+		if _, err := s.db.Exec(`INSERT INTO usage_logs (ts, token_name, browser, method, target_host, status_code, success, duration_ms, error_type) VALUES (?, 'a', 'chrome150', 'GET', 'x.com', 200, 1, 50, '')`, ts); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := s.db.Exec(`DELETE FROM daily_stats`); err != nil {
+		t.Fatal(err)
+	}
+	_ = s.Close()
+
+	s, err = Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	days, _ := s.DailyStats(30)
+	if len(days) != 2 || days[0].Requests != 1 || days[1].Requests != 2 {
+		t.Fatalf("backfill days = %+v", days)
+	}
+
+	// Reopening must not double count.
+	_ = s.Close()
+	s, _ = Open(path)
+	if tot, _ := s.TotalStats(); tot.Requests != 3 {
+		t.Fatalf("after reopen requests = %d, want 3", tot.Requests)
+	}
+}

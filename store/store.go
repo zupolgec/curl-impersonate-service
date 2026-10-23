@@ -67,7 +67,36 @@ CREATE TABLE IF NOT EXISTS usage_logs (
     error_type  TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_usage_logs_ts ON usage_logs(ts);
+CREATE TABLE IF NOT EXISTS daily_stats (
+    day         TEXT    NOT NULL,
+    token_name  TEXT    NOT NULL,
+    browser     TEXT    NOT NULL,
+    requests    INTEGER NOT NULL,
+    success     INTEGER NOT NULL,
+    duration_ms INTEGER NOT NULL,
+    PRIMARY KEY (day, token_name, browser)
+);
 `
+
+// statsUpsert adds one aggregated row to daily_stats. Days are UTC.
+const statsUpsert = `
+INSERT INTO daily_stats (day, token_name, browser, requests, success, duration_ms)
+VALUES (?, ?, ?, ?, ?, ?)
+ON CONFLICT(day, token_name, browser) DO UPDATE SET
+    requests    = requests + excluded.requests,
+    success     = success + excluded.success,
+    duration_ms = duration_ms + excluded.duration_ms`
+
+// backfillStats seeds daily_stats from the usage logs still on disk, for
+// databases created before the history existed. It runs only while the
+// history is empty, so it never double counts.
+const backfillStats = `
+INSERT INTO daily_stats (day, token_name, browser, requests, success, duration_ms)
+SELECT date(ts, 'unixepoch'), COALESCE(token_name, ''), COALESCE(browser, ''),
+       COUNT(*), SUM(success), SUM(duration_ms)
+FROM usage_logs
+WHERE NOT EXISTS (SELECT 1 FROM daily_stats)
+GROUP BY 1, 2, 3`
 
 // Open opens (and migrates) the SQLite database at path.
 func Open(path string) (*Store, error) {
@@ -80,6 +109,10 @@ func Open(path string) (*Store, error) {
 	if _, err := db.Exec(schema); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("migrate schema: %w", err)
+	}
+	if _, err := db.Exec(backfillStats); err != nil {
+		_ = db.Close()
+		return nil, fmt.Errorf("backfill stats: %w", err)
 	}
 	return &Store{db: db}, nil
 }
@@ -213,19 +246,90 @@ func (s *Store) SetSetting(key, value string) error {
 	return err
 }
 
-// AddLog inserts a usage-log entry. The timestamp is set to now.
+// AddLog inserts a usage-log entry and adds it to the daily history. The
+// timestamp is set to now.
 func (s *Store) AddLog(e LogEntry) error {
 	success := 0
 	if e.Success {
 		success = 1
 	}
-	_, err := s.db.Exec(
+	now := time.Now()
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+	if _, err := tx.Exec(
 		`INSERT INTO usage_logs (ts, token_name, browser, method, target_host, status_code, success, duration_ms, error_type)
 		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		time.Now().Unix(), e.TokenName, e.Browser, e.Method, e.TargetHost,
+		now.Unix(), e.TokenName, e.Browser, e.Method, e.TargetHost,
 		e.StatusCode, success, e.DurationMs, e.ErrorType,
+	); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(statsUpsert,
+		now.UTC().Format("2006-01-02"), e.TokenName, e.Browser, 1, success, e.DurationMs,
+	); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// Stats aggregates request counts over a period.
+type Stats struct {
+	Day        string    // set by DailyStats (YYYY-MM-DD, UTC)
+	Since      time.Time // set by TotalStats: first tracked day
+	Requests   int64
+	Success    int64
+	Failed     int64
+	DurationMs int64
+}
+
+// AvgMs returns the average request duration in milliseconds.
+func (st Stats) AvgMs() int64 {
+	if st.Requests == 0 {
+		return 0
+	}
+	return st.DurationMs / st.Requests
+}
+
+// TotalStats returns the totals over the whole history.
+func (s *Store) TotalStats() (Stats, error) {
+	var st Stats
+	var first sql.NullString
+	err := s.db.QueryRow(
+		`SELECT MIN(day), COALESCE(SUM(requests), 0), COALESCE(SUM(success), 0), COALESCE(SUM(duration_ms), 0) FROM daily_stats`,
+	).Scan(&first, &st.Requests, &st.Success, &st.DurationMs)
+	if err != nil {
+		return st, err
+	}
+	st.Failed = st.Requests - st.Success
+	if first.Valid {
+		st.Since, _ = time.Parse("2006-01-02", first.String)
+	}
+	return st, nil
+}
+
+// DailyStats returns per-day totals for the last n days, newest first.
+func (s *Store) DailyStats(n int) ([]Stats, error) {
+	rows, err := s.db.Query(
+		`SELECT day, SUM(requests), SUM(success), SUM(duration_ms) FROM daily_stats
+		 GROUP BY day ORDER BY day DESC LIMIT ?`, n,
 	)
-	return err
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	var out []Stats
+	for rows.Next() {
+		var st Stats
+		if err := rows.Scan(&st.Day, &st.Requests, &st.Success, &st.DurationMs); err != nil {
+			return nil, err
+		}
+		st.Failed = st.Requests - st.Success
+		out = append(out, st)
+	}
+	return out, rows.Err()
 }
 
 // ListLogs returns the most recent usage logs, up to limit.

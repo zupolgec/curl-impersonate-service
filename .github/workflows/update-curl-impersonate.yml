@@ -4,6 +4,7 @@ name: Update curl-impersonate
 # bump it, run unit and integration tests, and if they pass commit to main,
 # cut a patch release and trigger the image builds (pushes made with
 # GITHUB_TOKEN do not trigger other workflows, so they are dispatched).
+# Finally it opens an issue, so GitHub emails that the image is ready to deploy.
 
 on:
   schedule:
@@ -13,6 +14,7 @@ on:
 permissions:
   contents: write
   actions: write
+  issues: write
 
 concurrency:
   group: update-curl-impersonate
@@ -77,3 +79,19 @@ jobs:
         gh workflow run docker.yml --ref main
         gh workflow run docker.yml --ref "v$next"
         gh workflow run release.yml --ref "v$next"
+        echo "next=$next" >> "$GITHUB_ENV"
+
+    - name: Ask for deploy
+      if: steps.bump.outputs.changed == 'true'
+      run: |
+        gh issue create \
+          --title "v$next ready to deploy (curl-impersonate ${{ steps.bump.outputs.target }})" \
+          --body "$(printf '%s\n' \
+            "curl-impersonate was updated to ${{ steps.bump.outputs.target }} and tests passed." \
+            "Release: https://github.com/${{ github.repository }}/releases/tag/v$next" \
+            "" \
+            "The \`latest\` image is being built (a few minutes). Then deploy:" \
+            "" \
+            "    coolify deploy uuid auqmumvhmguq4w7kz9f72geo" \
+            "" \
+            "and check that /health reports $next. Close this issue once deployed.")"

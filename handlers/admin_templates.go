@@ -75,12 +75,22 @@ const adminTemplates = `
 
 {{define "dashboard"}}
 <div class="grid">
-  <div class="card"><div class="n">{{.Total}}</div><div class="l">Requests</div></div>
-  <div class="card"><div class="n ok">{{.Success}}</div><div class="l">Success</div></div>
-  <div class="card"><div class="n bad">{{.Failed}}</div><div class="l">Failed</div></div>
-  <div class="card"><div class="n">{{printf "%.0f" .Avg}}<span class="muted" style="font-size:14px"> ms</span></div><div class="l">Avg duration</div></div>
+  <div class="card"><div class="n">{{.Total.Requests}}</div><div class="l">Requests</div></div>
+  <div class="card"><div class="n ok">{{.Total.Success}}</div><div class="l">Success</div></div>
+  <div class="card"><div class="n bad">{{.Total.Failed}}</div><div class="l">Failed</div></div>
+  <div class="card"><div class="n">{{.Total.AvgMs}}<span class="muted" style="font-size:14px"> ms</span></div><div class="l">Avg duration</div></div>
   <div class="card"><div class="n">{{fmtUptime .Uptime}}</div><div class="l">Uptime</div></div>
 </div>
+{{if not .Total.Since.IsZero}}<p class="muted" style="margin-top:-12px">Totals since {{.Total.Since.Format "2006-01-02"}}.</p>{{end}}
+<h2>Last 30 days</h2>
+<table style="margin-bottom:24px">
+  <tr><th>Day (UTC)</th><th>Requests</th><th>Success</th><th>Failed</th><th>Avg ms</th></tr>
+  {{range .Days}}
+  <tr><td>{{.Day}}</td><td>{{.Requests}}</td><td class="ok">{{.Success}}</td><td class="bad">{{.Failed}}</td><td class="muted">{{.AvgMs}}</td></tr>
+  {{else}}
+  <tr><td colspan="5" class="muted">No requests yet.</td></tr>
+  {{end}}
+</table>
 <h2>Recent requests</h2>
 {{template "logtable" .Logs}}
 {{end}}

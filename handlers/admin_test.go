@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/zupolgec/curl-impersonate-service/metrics"
 	"github.com/zupolgec/curl-impersonate-service/store"
@@ -130,5 +131,30 @@ func TestAdminLogin(t *testing.T) {
 	c := w.Result().Cookies()
 	if w.Code != http.StatusSeeOther || len(c) != 1 || c[0].MaxAge >= 0 {
 		t.Fatalf("logout: status %d, cookies %+v", w.Code, c)
+	}
+}
+
+// Dashboard counters come from the stored history, so they survive restarts
+// (a fresh collector here stands in for a restarted process).
+func TestAdminDashboardShowsStoredHistory(t *testing.T) {
+	h, st := newTestAdmin(t)
+	for _, ok := range []bool{true, true, false} {
+		if err := st.AddLog(store.LogEntry{TokenName: "a", Browser: "chrome152", Method: "GET", Success: ok, DurationMs: 30}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/admin/", nil))
+	body := w.Body.String()
+	for _, want := range []string{
+		`<div class="n">3</div><div class="l">Requests</div>`,
+		`<div class="n ok">2</div>`,
+		`<div class="n bad">1</div>`,
+		"Last 30 days",
+		time.Now().UTC().Format("2006-01-02"),
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("dashboard missing %q", want)
+		}
 	}
 }

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Request history: daily totals per token and browser are stored and never
+  purged, so dashboard counters survive restarts. The dashboard shows totals
+  since tracking began and the last 30 days. On first start the history is
+  seeded from the usage logs still on disk.
+- The weekly curl-impersonate update opens a GitHub issue when a new release
+  is ready to deploy, so GitHub sends an email.
+
 ## [1.5.0] - 2026-10-23
 
 ### Changed

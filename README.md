@@ -355,7 +355,7 @@ without an API token. From there you can:
 - **Tokens**: create, disable/enable and delete API tokens
 - **CORS**: edit the allowed origins at runtime (no restart needed)
 - **Logs**: browse recent request usage (time, token, browser, target host, status)
-- **Dashboard**: live metrics and recent activity
+- **Dashboard**: totals since tracking began, the last 30 days and recent activity (kept across restarts)
 
 Usage logs record only the target host (never the full URL, headers or body) and
 are purged automatically after `LOG_RETENTION_HOURS`. The datastore is a single

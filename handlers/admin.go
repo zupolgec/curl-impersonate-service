@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -128,28 +127,20 @@ func NewAdminLoginHandler(adminToken string) http.Handler {
 }
 
 func (h *AdminHandler) dashboard(w http.ResponseWriter, r *http.Request) {
-	uptime, total, success, failed, avg, browsers := h.collector.GetMetrics()
-
-	type kv struct {
-		Name  string
-		Count int64
+	uptime, _, _, _, _, _ := h.collector.GetMetrics()
+	total, err := h.store.TotalStats()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	var used []kv
-	for k, v := range browsers {
-		used = append(used, kv{k, v})
-	}
-	sort.Slice(used, func(i, j int) bool { return used[i].Count > used[j].Count })
-
+	days, _ := h.store.DailyStats(30)
 	logs, _ := h.store.ListLogs(15)
 
 	h.render(w, "dashboard", map[string]any{
-		"Uptime":   uptime,
-		"Total":    total,
-		"Success":  success,
-		"Failed":   failed,
-		"Avg":      avg,
-		"Browsers": used,
-		"Logs":     logs,
+		"Uptime": uptime,
+		"Total":  total,
+		"Days":   days,
+		"Logs":   logs,
 	})
 }
 
