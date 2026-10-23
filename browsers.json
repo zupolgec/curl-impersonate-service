@@ -385,6 +385,97 @@
             },
             "binary": "curl-impersonate",
             "wrapper_script": "curl_tor145"
+        },
+        {
+            "name": "chrome151",
+            "browser": {
+                "name": "chrome",
+                "version": "151",
+                "os": "win10"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome151"
+        },
+        {
+            "name": "chrome151_macos",
+            "browser": {
+                "name": "chrome",
+                "version": "151",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome151_macos"
+        },
+        {
+            "name": "chrome152",
+            "browser": {
+                "name": "chrome",
+                "version": "152",
+                "os": "win10"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome152"
+        },
+        {
+            "name": "chrome152_macos",
+            "browser": {
+                "name": "chrome",
+                "version": "152",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_chrome152_macos"
+        },
+        {
+            "name": "firefox153",
+            "browser": {
+                "name": "firefox",
+                "version": "153",
+                "os": "win10"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_firefox153"
+        },
+        {
+            "name": "firefox154",
+            "browser": {
+                "name": "firefox",
+                "version": "154",
+                "os": "win10"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_firefox154"
+        },
+        {
+            "name": "firefox155",
+            "browser": {
+                "name": "firefox",
+                "version": "155",
+                "os": "win10"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_firefox155"
+        },
+        {
+            "name": "safari270",
+            "browser": {
+                "name": "safari",
+                "version": "27.0",
+                "os": "macos"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari270"
+        },
+        {
+            "name": "safari270_ios",
+            "browser": {
+                "name": "safari",
+                "version": "27.0",
+                "os": "ios",
+                "device": "iphone"
+            },
+            "binary": "curl-impersonate",
+            "wrapper_script": "curl_safari270_ios"
         }
     ]
 }
