@@ -1,0 +1,79 @@
+name: Update curl-impersonate
+
+# Weekly check for a new lexiforest/curl-impersonate release. When one is out,
+# bump it, run unit and integration tests, and if they pass commit to main,
+# cut a patch release and trigger the image builds (pushes made with
+# GITHUB_TOKEN do not trigger other workflows, so they are dispatched).
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: update-curl-impersonate
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Bump curl-impersonate
+      id: bump
+      run: |
+        out="$(scripts/update-curl-impersonate.sh)"
+        echo "$out"
+        if [[ "$out" == up\ to\ date* ]]; then
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "target=$(sed -n 's/^ARG CURL_IMPERSONATE_VERSION=//p' Dockerfile)" >> "$GITHUB_OUTPUT"
+        fi
+
+    - uses: actions/setup-go@v7
+      if: steps.bump.outputs.changed == 'true'
+      with:
+        go-version-file: go.mod
+        check-latest: true
+
+    - name: Unit tests
+      if: steps.bump.outputs.changed == 'true'
+      run: CGO_ENABLED=0 go test ./...
+
+    - name: Integration tests
+      if: steps.bump.outputs.changed == 'true'
+      env:
+        COMPOSE_FILE: docker-compose.integration.yml
+        HTTPBIN_URL: http://httpbin:8080
+      run: |
+        docker compose up -d --build
+        timeout 60 bash -c 'until curl -sf http://localhost:8080/health; do sleep 1; done'
+        bash test_integration.sh || { docker compose logs; exit 1; }
+        docker compose down -v
+
+    - name: Commit, release and build
+      if: steps.bump.outputs.changed == 'true'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add Dockerfile browsers.json CHANGELOG.md
+        git commit -m "build: update curl-impersonate to ${{ steps.bump.outputs.target }}"
+        git push origin HEAD:main
+
+        last="$(git describe --tags --abbrev=0)"
+        IFS=. read -r major minor patch <<< "${last#v}"
+        next="$major.$minor.$((patch + 1))"
+        scripts/release.sh "$next"
+
+        gh workflow run docker.yml --ref main
+        gh workflow run docker.yml --ref "v$next"
+        gh workflow run release.yml --ref "v$next"

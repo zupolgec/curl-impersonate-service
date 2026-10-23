@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type BrowserInfo struct {
@@ -26,14 +28,8 @@ type BrowsersData struct {
 
 var (
 	browsersCache  map[string]BrowserConfig
-	browserAliases = map[string]string{
-		"chrome-latest":  "chrome150",
-		"firefox-latest": "firefox147",
-		"edge-latest":    "edge101",
-		"safari-latest":  "safari2601",
-		"tor-latest":     "tor145",
-	}
-	defaultBrowser = "chrome150"
+	browserAliases map[string]string
+	defaultBrowser string
 )
 
 // LoadBrowsers loads and caches browsers.json
@@ -52,8 +48,58 @@ func LoadBrowsers(path string) error {
 	for _, browser := range browsersData.Browsers {
 		browsersCache[browser.Name] = browser
 	}
+	browserAliases = latestAliases(browsersData.Browsers)
+	defaultBrowser = browserAliases["chrome-latest"]
 
 	return nil
+}
+
+// latestAliases maps "<browser>-latest" to the highest desktop (no device)
+// version of each browser. On equal versions the plain profile wins over an
+// OS-suffixed one (chrome152 over chrome152_macos).
+func latestAliases(browsers []BrowserConfig) map[string]string {
+	best := map[string]BrowserConfig{}
+	for _, b := range browsers {
+		if b.Browser.Device != "" {
+			continue
+		}
+		key := b.Browser.Name + "-latest"
+		cur, ok := best[key]
+		if !ok {
+			best[key] = b
+			continue
+		}
+		switch c := compareVersions(b.Browser.Version, cur.Browser.Version); {
+		case c > 0, c == 0 && len(b.Name) < len(cur.Name):
+			best[key] = b
+		}
+	}
+	aliases := make(map[string]string, len(best))
+	for k, b := range best {
+		aliases[k] = b.Name
+	}
+	return aliases
+}
+
+// compareVersions compares dotted numeric versions ("26.0.1" vs "27").
+func compareVersions(a, b string) int {
+	pa, pb := strings.Split(a, "."), strings.Split(b, ".")
+	for i := 0; i < len(pa) || i < len(pb); i++ {
+		var x, y int
+		if i < len(pa) {
+			x, _ = strconv.Atoi(pa[i])
+		}
+		if i < len(pb) {
+			y, _ = strconv.Atoi(pb[i])
+		}
+		if x != y {
+			if x > y {
+				return 1
+			}
+			return -1
+		}
+	}
+	return 0
 }
 
 // ResolveBrowserName resolves aliases and returns the actual browser name

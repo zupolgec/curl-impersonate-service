@@ -230,15 +230,23 @@ Error types: `network`, `dns`, `timeout`, `ssl`, `size`
 
 ## Supported Browsers
 
-| Browser | Versions | Alias |
+| Browser | Versions (curl-impersonate v2.3.0) | Alias |
 |---------|----------|-------|
-| Chrome | 99, 100, 101, 104, 107, 110, 116, 119, 120, 123, 124, 131, 133a, 136, 142, 145, 146, 150 (+ android) | `chrome-latest` → `chrome150` |
-| Firefox | 133, 135, 144, 147 | `firefox-latest` → `firefox147` |
-| Edge | 99, 101 | `edge-latest` → `edge101` |
-| Safari | 15.3, 15.5, 17.0, 18.0, 18.4, 26.0, 26.0.1 (+ iOS variants) | `safari-latest` → `safari2601` |
-| Tor | 14.5 | `tor-latest` → `tor145` |
+| Chrome | 99, 100, 101, 104, 107, 110, 116, 119, 120, 123, 124, 131, 133a, 136, 142, 145, 146, 150, 151, 152 (+ android, macOS variants) | `chrome-latest` |
+| Firefox | 133, 135, 144, 147, 153, 154, 155 | `firefox-latest` |
+| Edge | 99, 101 | `edge-latest` |
+| Safari | 15.3, 15.5, 17.0, 18.0, 18.4, 26.0, 26.0.1, 27.0 (+ iOS variants) | `safari-latest` |
+| Tor | 14.5 | `tor-latest` |
 
-Default browser: `chrome150` (chrome-latest)
+Each `-latest` alias points to the newest desktop profile of that browser in
+`browsers.json` (plain profile preferred over OS-suffixed ones of the same
+version); the default browser is `chrome-latest`. `GET /browsers` returns the
+live list and alias targets.
+
+curl-impersonate is kept current by the weekly `Update curl-impersonate`
+workflow: on a new upstream release it runs `scripts/update-curl-impersonate.sh`
+(Dockerfile + `browsers.json`), the unit and integration tests, and if they pass
+commits and cuts a patch release. Run the script by hand to update sooner.
 
 Powered by the actively-maintained [lexiforest/curl-impersonate](https://github.com/lexiforest/curl-impersonate) fork.
 

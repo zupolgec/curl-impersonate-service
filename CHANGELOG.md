@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- curl-impersonate updated from v2.2.2 to v2.3.0. New browser profiles: chrome151, chrome151_macos, chrome152, chrome152_macos, firefox153, firefox154, firefox155, safari270, safari270_ios.
 - Admin UI uses a login page with a 30-day session cookie instead of the
   browser's Basic auth prompt. Basic auth is still accepted for scripts.
 - Admin dashboard shows uptime as days/hours/minutes instead of seconds.
@@ -16,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Logged-in admins can open `/docs` without an API token; the admin header
   links to it and has a log out button.
+- Weekly `Update curl-impersonate` workflow: when upstream releases a new
+  version it updates the Dockerfile and `browsers.json`, runs unit and
+  integration tests and, if they pass, commits and cuts a patch release
+  (`scripts/update-curl-impersonate.sh` does the same by hand).
+- The `-latest` aliases and the default browser are derived from
+  `browsers.json` (newest desktop profile per browser) instead of being
+  hardcoded.
 
 ## [1.4.3] - 2026-09-07
 
