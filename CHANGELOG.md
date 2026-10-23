@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-23
+
 ### Added
 - Request history: daily totals per token and browser are stored and never
   purged, so dashboard counters survive restarts. The dashboard shows totals
