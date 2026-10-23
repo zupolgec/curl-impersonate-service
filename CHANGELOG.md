@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-23
+
 ### Changed
 - curl-impersonate updated from v2.2.2 to v2.3.0. New browser profiles: chrome151, chrome151_macos, chrome152, chrome152_macos, firefox153, firefox154, firefox155, safari270, safari270_ios.
 - Admin UI uses a login page with a 30-day session cookie instead of the
