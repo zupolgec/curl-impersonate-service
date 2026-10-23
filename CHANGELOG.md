@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Admin UI uses a login page with a 30-day session cookie instead of the
+  browser's Basic auth prompt. Basic auth is still accepted for scripts.
+- Admin dashboard shows uptime as days/hours/minutes instead of seconds.
+- Admin logs page states how long requests are kept.
+
+### Added
+- Logged-in admins can open `/docs` without an API token; the admin header
+  links to it and has a log out button.
+
 ## [1.4.3] - 2026-09-07
 
 ### Fixed

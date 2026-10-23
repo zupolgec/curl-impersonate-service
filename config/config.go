@@ -37,7 +37,7 @@ type Config struct {
 	DataDir           string
 	LogRetentionHours int
 
-	// APIDocsEnabled serves the public API docs page at "/".
+	// APIDocsEnabled serves the API docs page at "/docs".
 	APIDocsEnabled bool
 }
 

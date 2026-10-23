@@ -19,7 +19,7 @@ func newTestAdmin(t *testing.T) (http.Handler, *store.Store) {
 		t.Fatalf("store.Open: %v", err)
 	}
 	t.Cleanup(func() { _ = st.Close() })
-	return NewAdminHandler(st, metrics.NewCollector()), st
+	return NewAdminHandler(st, metrics.NewCollector(), true, 72), st
 }
 
 func TestAdminDashboardRenders(t *testing.T) {
@@ -65,5 +65,70 @@ func TestAdminCORSProviderReflectsSetting(t *testing.T) {
 	got := provider()
 	if len(got) != 2 || got[0] != "https://a.com" || got[1] != "https://b.com" {
 		t.Fatalf("provider() = %v, want [https://a.com https://b.com]", got)
+	}
+}
+
+func TestFormatUptime(t *testing.T) {
+	cases := map[int64]string{
+		0:       "0s",
+		42:      "42s",
+		61:      "1m",
+		3720:    "1h 2m",
+		90061:   "1d 1h",
+		2592000: "30d 0h",
+	}
+	for in, want := range cases {
+		if got := formatUptime(in); got != want {
+			t.Errorf("formatUptime(%d) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+func TestAdminLogin(t *testing.T) {
+	const admin = "admin-secret"
+	h := NewAdminLoginHandler(admin)
+
+	// Login page renders.
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/admin/login", nil))
+	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), `type="password"`) {
+		t.Fatalf("login page: status %d", w.Code)
+	}
+
+	post := func(pass, next string) *httptest.ResponseRecorder {
+		form := url.Values{"password": {pass}, "next": {next}}
+		req := httptest.NewRequest(http.MethodPost, "/admin/login", strings.NewReader(form.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, req)
+		return w
+	}
+
+	// Wrong password: no cookie, error shown.
+	w = post("nope", "")
+	if w.Code != http.StatusUnauthorized || len(w.Result().Cookies()) != 0 {
+		t.Fatalf("wrong password: status %d, cookies %d", w.Code, len(w.Result().Cookies()))
+	}
+
+	// Right password: cookie set, redirected to next.
+	w = post(admin, "/admin/logs")
+	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != "/admin/logs" {
+		t.Fatalf("login: status %d, location %q", w.Code, w.Header().Get("Location"))
+	}
+	if len(w.Result().Cookies()) != 1 {
+		t.Fatal("login did not set a session cookie")
+	}
+
+	// Open redirects are refused.
+	if loc := post(admin, "//evil.example").Header().Get("Location"); loc != "/admin/" {
+		t.Fatalf("open redirect: location %q", loc)
+	}
+
+	// Logout clears the cookie.
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/admin/logout", nil))
+	c := w.Result().Cookies()
+	if w.Code != http.StatusSeeOther || len(c) != 1 || c[0].MaxAge >= 0 {
+		t.Fatalf("logout: status %d, cookies %+v", w.Code, c)
 	}
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"sort"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/zupolgec/curl-impersonate-service/metrics"
+	"github.com/zupolgec/curl-impersonate-service/middleware"
 	"github.com/zupolgec/curl-impersonate-service/store"
 )
 
@@ -17,18 +19,23 @@ const corsSettingKey = "cors_allowed_origins"
 
 // AdminHandler serves the admin UI and its form actions.
 type AdminHandler struct {
-	store     *store.Store
-	collector *metrics.Collector
-	tmpl      *template.Template
+	store          *store.Store
+	collector      *metrics.Collector
+	docsEnabled    bool
+	retentionHours int
 }
 
+var adminTmpl = template.Must(template.New("admin").Funcs(adminFuncs).Parse(adminTemplates))
+
 // NewAdminHandler builds the admin UI handler and returns an http.Handler
-// mounted under /admin/.
-func NewAdminHandler(st *store.Store, collector *metrics.Collector) http.Handler {
+// mounted under /admin/. docsEnabled adds a link to /docs; retentionHours is
+// shown on the logs page (0 means logs are kept forever).
+func NewAdminHandler(st *store.Store, collector *metrics.Collector, docsEnabled bool, retentionHours int) http.Handler {
 	h := &AdminHandler{
-		store:     st,
-		collector: collector,
-		tmpl:      template.Must(template.New("admin").Funcs(adminFuncs).Parse(adminTemplates)),
+		store:          st,
+		collector:      collector,
+		docsEnabled:    docsEnabled,
+		retentionHours: retentionHours,
 	}
 
 	mux := http.NewServeMux()
@@ -44,6 +51,7 @@ func NewAdminHandler(st *store.Store, collector *metrics.Collector) http.Handler
 }
 
 var adminFuncs = template.FuncMap{
+	"fmtUptime": formatUptime,
 	"fmtTime": func(t time.Time) string {
 		if t.IsZero() {
 			return "—"
@@ -58,15 +66,65 @@ var adminFuncs = template.FuncMap{
 	},
 }
 
-func (h *AdminHandler) render(w http.ResponseWriter, page string, data map[string]any) {
+// formatUptime renders seconds as the two largest units, e.g. "3d 4h".
+func formatUptime(secs int64) string {
+	d, h, m := secs/86400, secs%86400/3600, secs%3600/60
+	switch {
+	case d > 0:
+		return fmt.Sprintf("%dd %dh", d, h)
+	case h > 0:
+		return fmt.Sprintf("%dh %dm", h, m)
+	case m > 0:
+		return fmt.Sprintf("%dm", m)
+	}
+	return fmt.Sprintf("%ds", secs)
+}
+
+func renderAdmin(w http.ResponseWriter, status int, page string, data map[string]any) {
 	if data == nil {
 		data = map[string]any{}
 	}
 	data["Page"] = page
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := h.tmpl.ExecuteTemplate(w, "layout", data); err != nil {
+	w.WriteHeader(status)
+	if err := adminTmpl.ExecuteTemplate(w, "layout", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (h *AdminHandler) render(w http.ResponseWriter, page string, data map[string]any) {
+	if data == nil {
+		data = map[string]any{}
+	}
+	data["DocsEnabled"] = h.docsEnabled
+	renderAdmin(w, http.StatusOK, page, data)
+}
+
+// NewAdminLoginHandler serves /admin/login (form + submit) and /admin/logout.
+// It sits outside the admin auth middleware.
+func NewAdminLoginHandler(adminToken string) http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /admin/login", func(w http.ResponseWriter, r *http.Request) {
+		renderAdmin(w, http.StatusOK, "login", map[string]any{"Next": r.URL.Query().Get("next")})
+	})
+	mux.HandleFunc("POST /admin/login", func(w http.ResponseWriter, r *http.Request) {
+		next := r.FormValue("next")
+		if !middleware.CheckAdminPassword(adminToken, r.FormValue("password")) {
+			renderAdmin(w, http.StatusUnauthorized, "login", map[string]any{"Next": next, "Error": true})
+			return
+		}
+		// Only same-site paths, never "//host" or absolute URLs.
+		if !strings.HasPrefix(next, "/") || strings.HasPrefix(next, "//") || strings.HasPrefix(next, "/\\") {
+			next = "/admin/"
+		}
+		middleware.SetAdminSession(w, r, adminToken)
+		http.Redirect(w, r, next, http.StatusSeeOther)
+	})
+	mux.HandleFunc("POST /admin/logout", func(w http.ResponseWriter, r *http.Request) {
+		middleware.ClearAdminSession(w)
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+	})
+	return mux
 }
 
 func (h *AdminHandler) dashboard(w http.ResponseWriter, r *http.Request) {
@@ -170,7 +228,7 @@ func (h *AdminHandler) logs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	h.render(w, "logs", map[string]any{"Logs": logs, "Limit": limit})
+	h.render(w, "logs", map[string]any{"Logs": logs, "Limit": limit, "RetentionHours": h.retentionHours})
 }
 
 // CORSOriginProvider returns an origin provider backed by the datastore setting,

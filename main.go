@@ -84,14 +84,18 @@ func main() {
 
 	// API docs at /docs (token-authenticated), toggleable.
 	if cfg.APIDocsEnabled {
-		mux.Handle("/docs", authMw(handlers.NewDocsHandler(cfg.AdminToken != "")))
+		docsMw := middleware.APIOrAdminMiddleware(st.ValidateToken, cfg.AdminToken)
+		mux.Handle("/docs", docsMw(handlers.NewDocsHandler(cfg.AdminToken != "")))
 		log.Printf("API docs enabled at /docs")
 	}
 
-	// Admin UI (enabled only when ADMIN_TOKEN is set), protected by Basic auth.
+	// Admin UI (enabled only when ADMIN_TOKEN is set), behind a login page.
 	if cfg.AdminToken != "" {
 		adminMw := middleware.AdminAuthMiddleware(cfg.AdminToken)
-		mux.Handle("/admin/", adminMw(handlers.NewAdminHandler(st, collector)))
+		login := handlers.NewAdminLoginHandler(cfg.AdminToken)
+		mux.Handle("/admin/login", login)
+		mux.Handle("/admin/logout", login)
+		mux.Handle("/admin/", adminMw(handlers.NewAdminHandler(st, collector, cfg.APIDocsEnabled, cfg.LogRetentionHours)))
 		log.Printf("Admin UI enabled at /admin/")
 	}
 

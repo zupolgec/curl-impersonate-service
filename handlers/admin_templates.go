@@ -30,7 +30,7 @@ const adminTemplates = `
   tr:last-child td { border-bottom:none; }
   code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:color-mix(in srgb,var(--fg) 8%,transparent); padding:1px 6px; border-radius:4px; word-break:break-all; }
   form.inline { display:inline; }
-  input[type=text] { background:var(--bg); border:1px solid var(--border); color:var(--fg); border-radius:6px; padding:8px 10px; font:inherit; }
+  input[type=text], input[type=password] { background:var(--bg); border:1px solid var(--border); color:var(--fg); border-radius:6px; padding:8px 10px; font:inherit; }
   textarea { width:100%; background:var(--bg); border:1px solid var(--border); color:var(--fg); border-radius:6px; padding:10px; font:13px/1.5 ui-monospace,monospace; }
   button { background:var(--accent); color:#fff; border:0; border-radius:6px; padding:8px 14px; font:inherit; font-weight:600; cursor:pointer; }
   button.ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
@@ -40,9 +40,15 @@ const adminTemplates = `
   .banner code { background:var(--bg); }
   h2 { font-size:16px; margin:0 0 14px; }
   .row-actions { display:flex; gap:6px; }
+  header .right { margin-left:auto; display:flex; gap:12px; align-items:center; }
+  header .right a { color:var(--muted); text-decoration:none; }
+  .login { max-width:340px; margin:12vh auto 0; }
+  .login input { width:100%; margin-bottom:12px; }
+  .login button { width:100%; }
 </style>
 </head>
 <body>
+{{if ne .Page "login"}}
 <header>
   <h1>🎭 impersonate</h1>
   <nav>
@@ -51,12 +57,18 @@ const adminTemplates = `
     <a href="/admin/cors" class="{{if eq .Page "cors"}}active{{end}}">CORS</a>
     <a href="/admin/logs" class="{{if eq .Page "logs"}}active{{end}}">Logs</a>
   </nav>
+  <div class="right">
+    {{if .DocsEnabled}}<a href="/docs" target="_blank">API docs ↗</a>{{end}}
+    <form class="inline" method="post" action="/admin/logout"><button class="ghost" type="submit">Log out</button></form>
+  </div>
 </header>
+{{end}}
 <main>
 {{if eq .Page "dashboard"}}{{template "dashboard" .}}{{end}}
 {{if eq .Page "tokens"}}{{template "tokens" .}}{{end}}
 {{if eq .Page "cors"}}{{template "cors" .}}{{end}}
 {{if eq .Page "logs"}}{{template "logs" .}}{{end}}
+{{if eq .Page "login"}}{{template "login" .}}{{end}}
 </main>
 </body>
 </html>{{end}}
@@ -67,7 +79,7 @@ const adminTemplates = `
   <div class="card"><div class="n ok">{{.Success}}</div><div class="l">Success</div></div>
   <div class="card"><div class="n bad">{{.Failed}}</div><div class="l">Failed</div></div>
   <div class="card"><div class="n">{{printf "%.0f" .Avg}}<span class="muted" style="font-size:14px"> ms</span></div><div class="l">Avg duration</div></div>
-  <div class="card"><div class="n">{{.Uptime}}<span class="muted" style="font-size:14px"> s</span></div><div class="l">Uptime</div></div>
+  <div class="card"><div class="n">{{fmtUptime .Uptime}}</div><div class="l">Uptime</div></div>
 </div>
 <h2>Recent requests</h2>
 {{template "logtable" .Logs}}
@@ -121,7 +133,19 @@ const adminTemplates = `
 
 {{define "logs"}}
 <h2>Usage logs <span class="muted" style="font-size:13px; font-weight:400">(most recent {{.Limit}})</span></h2>
+<p class="muted">{{if gt .RetentionHours 0}}Requests are kept for {{.RetentionHours}} hours, then deleted automatically.{{else}}Requests are kept forever.{{end}}</p>
 {{template "logtable" .Logs}}
+{{end}}
+
+{{define "login"}}
+<form class="login card" method="post" action="/admin/login">
+  <h2>🎭 impersonate admin</h2>
+  {{if .Error}}<p class="bad">Wrong password.</p>{{end}}
+  <input type="hidden" name="next" value="{{.Next}}">
+  <input type="text" name="username" value="admin" autocomplete="username" hidden>
+  <input type="password" name="password" placeholder="Admin password" autocomplete="current-password" autofocus required>
+  <button type="submit">Log in</button>
+</form>
 {{end}}
 
 {{define "logtable"}}

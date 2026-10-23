@@ -327,10 +327,10 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 | `SSRF_ALLOW_IP` | No | `false` | Allow targets addressed by raw IP (default: hostnames only) |
 | `SSRF_DENY_HOSTS` | No | - | Comma-separated hostnames to always block |
 | `SSRF_ALLOW_HOSTS` | No | - | Comma-separated allowlist; if set, only these hosts are permitted |
-| `ADMIN_TOKEN` | No | - | Enables the admin UI at `/admin/` (HTTP Basic auth, password = this token) |
+| `ADMIN_TOKEN` | No | - | Enables the admin UI at `/admin/` (login password = this token) |
 | `DATA_DIR` | No | `/data` | Directory for the SQLite datastore (mount a volume here) |
 | `LOG_RETENTION_HOURS` | No | `72` | How long usage logs are kept before automatic purge |
-| `API_DOCS_ENABLED` | No | `true` | Serve the API docs page at `/docs` (token-authenticated) |
+| `API_DOCS_ENABLED` | No | `true` | Serve the API docs page at `/docs` (API token or admin login) |
 
 > **Note**: `TOKEN` is now optional. If set, it is seeded as an API token for
 > backward compatibility. Additional API tokens are managed from the admin UI
@@ -338,8 +338,11 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 
 ### Admin UI
 
-When `ADMIN_TOKEN` is set, an admin dashboard is served at `/admin/`, protected
-by HTTP Basic auth (any username; the password is the admin token). From there you can:
+When `ADMIN_TOKEN` is set, an admin dashboard is served at `/admin/`, behind a
+login page whose password is the admin token. The session lasts 30 days and
+ends when the admin token changes. HTTP Basic auth (any username, admin token
+as password) is still accepted for scripts. While logged in, `/docs` opens
+without an API token. From there you can:
 
 - **Tokens**: create, disable/enable and delete API tokens
 - **CORS**: edit the allowed origins at runtime (no restart needed)
