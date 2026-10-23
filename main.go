@@ -82,12 +82,17 @@ func main() {
 	mux.Handle("/metrics", authMw(handlers.NewMetricsHandler(collector)))
 	mux.Handle("/impersonate", authMw(handlers.NewImpersonateHandler(cfg, collector, st)))
 
-	// API docs at /docs (token-authenticated), toggleable.
+	// Public API docs (HTML, or Markdown for agents), toggleable.
 	if cfg.APIDocsEnabled {
-		docsMw := middleware.APIOrAdminMiddleware(st.ValidateToken, cfg.AdminToken)
-		mux.Handle("/docs", docsMw(handlers.NewDocsHandler(cfg.AdminToken != "")))
+		docs := handlers.NewDocsHandler(cfg.AdminToken != "")
+		mux.Handle("GET /docs", docs)
+		mux.Handle("GET /docs.md", docs)
+		mux.Handle("GET /llms.txt", docs)
 		log.Printf("API docs enabled at /docs")
 	}
+
+	// Landing page at "/" only; other unknown paths stay 404.
+	mux.Handle("GET /{$}", handlers.NewHomeHandler(cfg.APIDocsEnabled, cfg.AdminToken != ""))
 
 	// Admin UI (enabled only when ADMIN_TOKEN is set), behind a login page.
 	if cfg.AdminToken != "" {

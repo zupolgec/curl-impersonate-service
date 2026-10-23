@@ -85,18 +85,3 @@ func AdminAuthMiddleware(adminToken string) func(http.Handler) http.Handler {
 		})
 	}
 }
-
-// APIOrAdminMiddleware accepts either a valid API token or an admin session,
-// so a logged-in admin can open pages like /docs without an API token.
-func APIOrAdminMiddleware(validate TokenValidator, adminToken string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		api := AuthMiddleware(validate)(next)
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if adminToken != "" && IsAdmin(r, adminToken) {
-				next.ServeHTTP(w, r)
-				return
-			}
-			api.ServeHTTP(w, r)
-		})
-	}
-}

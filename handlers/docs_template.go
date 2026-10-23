@@ -39,11 +39,12 @@ const docsTemplate = `<!DOCTYPE html>
 <header><div class="wrap">
   <h1>curl-impersonate-service <span class="v">v{{.Version}}</span></h1>
   <div class="tag">HTTP requests that look like a real browser (TLS/HTTP2 fingerprints), as a REST API.</div>
+  <div class="tag">For agents: <a href="/docs.md">/docs.md</a> (Markdown), also served on <code>Accept: text/markdown</code>.</div>
 </div></header>
 <main>
 
 <h2>Authentication</h2>
-<p>All endpoints except <code>/health</code> require an API token, sent as
+<p>All API endpoints except <code>/health</code> require an API token, sent as
 either a bearer header or a query parameter:</p>
 <pre><code>Authorization: Bearer &lt;token&gt;
 # or
@@ -78,7 +79,7 @@ either a bearer header or a query parameter:</p>
 </table>
 
 <h3>Example</h3>
-<pre><code>curl -X POST http://localhost:8080/impersonate \
+<pre><code>curl -X POST {{.BaseURL}}/impersonate \
   -H "Authorization: Bearer &lt;token&gt;" \
   -H "Content-Type: application/json" \
   -d '{"browser":"{{.Default}}","url":"https://example.com"}'</code></pre>

@@ -79,8 +79,9 @@ Set your token via the `TOKEN` environment variable.
 
 #### `GET /docs`
 
-API documentation page (authentication required — open it with `?token=<token>`
-in a browser). Disable with `API_DOCS_ENABLED=false`.
+Public API documentation page. Agents can get it as Markdown from `/docs.md`
+or `/llms.txt`, or by sending `Accept: text/markdown` (also honoured by `/`).
+Disable with `API_DOCS_ENABLED=false`.
 
 #### `GET /health`
 
@@ -338,7 +339,7 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 | `ADMIN_TOKEN` | No | - | Enables the admin UI at `/admin/` (login password = this token) |
 | `DATA_DIR` | No | `/data` | Directory for the SQLite datastore (mount a volume here) |
 | `LOG_RETENTION_HOURS` | No | `72` | How long usage logs are kept before automatic purge |
-| `API_DOCS_ENABLED` | No | `true` | Serve the API docs page at `/docs` (API token or admin login) |
+| `API_DOCS_ENABLED` | No | `true` | Serve the public API docs at `/docs` (Markdown at `/docs.md`, `/llms.txt` or with `Accept: text/markdown`) |
 
 > **Note**: `TOKEN` is now optional. If set, it is seeded as an API token for
 > backward compatibility. Additional API tokens are managed from the admin UI
@@ -349,8 +350,7 @@ See more examples in [examples/test-requests.sh](examples/test-requests.sh)
 When `ADMIN_TOKEN` is set, an admin dashboard is served at `/admin/`, behind a
 login page whose password is the admin token. The session lasts 30 days and
 ends when the admin token changes. HTTP Basic auth (any username, admin token
-as password) is still accepted for scripts. While logged in, `/docs` opens
-without an API token. From there you can:
+as password) is still accepted for scripts. From there you can:
 
 - **Tokens**: create, disable/enable and delete API tokens
 - **CORS**: edit the allowed origins at runtime (no restart needed)

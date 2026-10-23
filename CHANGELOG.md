@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Landing page at `/` linking to the docs and the admin UI.
+- API docs in Markdown for agents: `/docs.md`, `/llms.txt`, or `/docs` and `/`
+  with `Accept: text/markdown`.
+
+### Changed
+- `/docs` is public (the API itself still needs a token) and its examples use
+  the host the docs were served from instead of `localhost`.
+
 ## [1.6.0] - 2026-10-23
 
 ### Added

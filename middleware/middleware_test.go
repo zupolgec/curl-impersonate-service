@@ -134,33 +134,3 @@ func TestAdminAuthMiddleware(t *testing.T) {
 		})
 	}
 }
-
-func TestAPIOrAdminMiddleware(t *testing.T) {
-	const admin = "admin-secret"
-	validate := func(tok string) (string, bool) { return "api", tok == "api-token" }
-	h := APIOrAdminMiddleware(validate, admin)(okHandler())
-
-	login := httptest.NewRecorder()
-	SetAdminSession(login, httptest.NewRequest(http.MethodPost, "/admin/login", nil), admin)
-
-	cases := []struct {
-		name       string
-		setup      func(*http.Request)
-		wantStatus int
-	}{
-		{"api token", func(r *http.Request) { r.Header.Set("Authorization", "Bearer api-token") }, http.StatusOK},
-		{"admin session", func(r *http.Request) { r.AddCookie(login.Result().Cookies()[0]) }, http.StatusOK},
-		{"nothing", func(r *http.Request) {}, http.StatusUnauthorized},
-	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodGet, "/docs", nil)
-			tc.setup(r)
-			w := httptest.NewRecorder()
-			h.ServeHTTP(w, r)
-			if w.Code != tc.wantStatus {
-				t.Fatalf("status = %d, want %d", w.Code, tc.wantStatus)
-			}
-		})
-	}
-}
