@@ -7,7 +7,7 @@ WORKDIR /tmp
 
 # Download pre-compiled binaries and libraries for the target architecture.
 # Uses the actively-maintained lexiforest fork (lwthiker's is archived).
-ARG CURL_IMPERSONATE_VERSION=v2.3.0
+ARG CURL_IMPERSONATE_VERSION=v2.3.1
 ARG TARGETARCH
 RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH="aarch64"; else ARCH="x86_64"; fi && \
     BASE="https://github.com/lexiforest/curl-impersonate/releases/download/${CURL_IMPERSONATE_VERSION}" && \
